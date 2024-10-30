@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"jumpStart-backEnd/db"
+	"jumpStart-backEnd/repository"
+	
+)
 
 func main() {
-	fmt.Println("Hello World")
+	db := db.GetDB()
+	newsRepository := repository.NewNewsRepository(db)
+	newsRepository.FindAllNews()
+	
 }
+
