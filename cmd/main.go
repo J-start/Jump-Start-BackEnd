@@ -1,15 +1,25 @@
 package main
 
 import (
+	"jumpStart-backEnd/controller"
 	"jumpStart-backEnd/db"
 	"jumpStart-backEnd/repository"
-	
+	"log"
+	"net/http"
+
+	"jumpStart-backEnd/useCase"
 )
 
 func main() {
 	db := db.GetDB()
-	newsRepository := repository.NewNewsRepository(db)
-	newsRepository.FindAllNews()
+	newsRepository := repository.NewShareRepository(db)
+	shareUseCase := usecase.NewShareUseCase(newsRepository)
+	
+	shareController := controller.NewShareController(shareUseCase)
+
+	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 	
 }
 
