@@ -18,6 +18,7 @@ func main() {
 	shareController := controller.NewShareController(shareUseCase)
 
 	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
+	http.HandleFunc("/datas/shares/offset", shareController.GetSharesSpecifyOffSet)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	
