@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"jumpStart-backEnd/dto"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -29,7 +28,7 @@ func NewShareRepository(db *sql.DB) *ShareRepository {
 	return &ShareRepository{db: db}
 }
 
-func (repo *ShareRepository) FindAllShares() ([]dto.ShareDTO, error) {
+func (repo *ShareRepository) FindAllShares() ([]Share, error) {
 	numberSharesPerQuery, err := repo.DetermineNumberRowsToSearch()
 	if err != nil {
 		log.Fatal(err)
@@ -44,23 +43,7 @@ func (repo *ShareRepository) FindAllShares() ([]dto.ShareDTO, error) {
 
 	defer rows.Close()
 
-	var shares []dto.ShareDTO
-
-	for rows.Next() {
-		var dateShare time.Time
-		var share Share
-		err := rows.Scan(&share.Id, &share.NameShare, &dateShare, &share.OpenShare, &share.HighShare, &share.LowShare, &share.CloseShare, &share.VolumeShare)
-		if err != nil {
-			log.Fatal(err)
-			return nil, err
-		}
-		share.DateShare = dateShare.Format("2006-01-02")
-        shareDTO := dto.NewShareDTO(share.NameShare, share.DateShare, share.OpenShare, share.HighShare, share.LowShare, share.CloseShare, share.VolumeShare)
-		shares = append(shares, *shareDTO)
-
-	}
-
-	return shares, nil
+	return buildShare(rows)
 
 }
 
@@ -84,4 +67,45 @@ func (repo *ShareRepository) DetermineNumberRowsToSearch() (int, error) {
 	}
 
 	return numberRows, nil
+}
+
+func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]Share, error) {
+	numberSharesPerQuery, err := repo.DetermineNumberRowsToSearch()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	offset *= 10;
+	query := fmt.Sprintf(`SELECT * FROM tb_share as ts  ORDER BY ts.id DESC LIMIT %d OFFSET %d`, numberSharesPerQuery, offset)
+	rows, err := repo.db.Query(query)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer rows.Close()
+
+	return buildShare(rows)
+
+}
+
+func buildShare(rows *sql.Rows) ([]Share, error) {
+	var shares []Share
+
+	for rows.Next() {
+		var dateShare time.Time
+		var share Share
+		err := rows.Scan(&share.Id, &share.NameShare, &dateShare, &share.OpenShare, &share.HighShare, &share.LowShare, &share.CloseShare, &share.VolumeShare)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+		share.DateShare = dateShare.Format("2006-01-02")
+
+		shares = append(shares, share)
+
+	}
+
+	return shares, nil
+
 }
