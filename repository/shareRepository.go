@@ -34,7 +34,7 @@ func (repo *ShareRepository) FindAllShares() ([]Share, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	query := fmt.Sprintf(`SELECT * FROM tb_share as ts WHERE ts.dateShare = DATE_FORMAT(NOW(), '%%Y-%%m-%%d') ORDER BY ts.dateShare DESC LIMIT %d`, numberSharesPerQuery)
+	query := fmt.Sprintf(`SELECT * FROM tb_share as ts WHERE ts.dateShare = '2024-10-12' ORDER BY ts.dateShare DESC LIMIT %d`, numberSharesPerQuery)
 	rows, err := repo.db.Query(query)
 
 	if err != nil {
