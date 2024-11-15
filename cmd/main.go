@@ -20,6 +20,8 @@ func main() {
 
 	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
 	http.HandleFunc("/datas/shares/offset", shareController.GetSharesSpecifyOffSet)
+	http.HandleFunc("/data/share/", shareController.GetShareById)
+	http.HandleFunc("/datas/share/", shareController.GetShareList)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }

@@ -72,3 +72,49 @@ func (c *ShareController) GetSharesSpecifyOffSet(w http.ResponseWriter, r *http.
 		return
 	}
 }
+
+func (c *ShareController) GetShareById(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	shareName := r.URL.Query().Get("shareName")
+	
+
+
+	share, err := c.useCase.FindShareById(shareName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(share); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (c *ShareController) GetShareList(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	shareName := r.URL.Query().Get("shareName")
+	
+	shares, err := c.useCase.ShareList(shareName)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(shares); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

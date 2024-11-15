@@ -10,17 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type Share struct {
-	Id          int
-	NameShare   string
-	DateShare   string
-	OpenShare   float64
-	HighShare   float64
-	LowShare    float64
-	CloseShare  float64
-	VolumeShare float64
-}
-
 type ShareRepository struct {
 	db *sql.DB
 }
@@ -45,7 +34,6 @@ func (repo *ShareRepository) FindAllShares() ([]entities.Share, error) {
 	defer rows.Close()
 
 	return buildShare(rows)
-
 }
 
 func (repo *ShareRepository) DetermineNumberRowsToSearch() (int, error) {
@@ -87,7 +75,63 @@ func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]entities.Share
 	defer rows.Close()
 
 	return buildShare(rows)
+}
 
+func (repo *ShareRepository) FindShareById(shareName string) (entities.Share, error) {
+	var share []entities.Share
+	query := fmt.Sprintf(`SELECT * FROM tb_share WHERE nameShare = '%s' ORDER BY id DESC LIMIT 1`, shareName)
+	rows, err := repo.db.Query(query)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	 defer rows.Close()
+
+	share, err = buildShare(rows)
+	if err != nil {
+		fmt.Println(err)
+		return entities.Share{}, err
+	}
+
+	if len(share) == 0 {
+		return entities.Share{}, nil
+	}
+	return share[0],nil
+}
+
+func (repo *ShareRepository) ShareNameList() ([]entities.Share, error) {
+
+	rows, err := repo.db.Query(`SELECT DISTINCT * FROM tb_share`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buildShare(rows)
+}
+
+func (repo *ShareRepository) ShareList(shareName string) ([]entities.Share, error) {
+	var share []entities.Share
+    const LIMIT = 20
+	query := fmt.Sprintf(`SELECT * FROM tb_share WHERE nameShare = '%s' LIMIT %d`, shareName,LIMIT)
+	rows, err := repo.db.Query(query)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	 defer rows.Close()
+
+	share, err = buildShare(rows)
+	if err != nil {
+		fmt.Println(err)
+		return []entities.Share{}, err
+	}
+
+	if len(share) == 0 {
+		return []entities.Share{}, nil
+	}
+	return share,nil
 }
 
 func buildShare(rows *sql.Rows) ([]entities.Share, error) {
@@ -98,7 +142,7 @@ func buildShare(rows *sql.Rows) ([]entities.Share, error) {
 		var share entities.Share
 		err := rows.Scan(&share.Id, &share.NameShare, &dateShare, &share.OpenShare, &share.HighShare, &share.LowShare, &share.CloseShare, &share.VolumeShare)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 			return nil, err
 		}
 		share.DateShare = dateShare.Format("2006-01-02")
@@ -110,3 +154,5 @@ func buildShare(rows *sql.Rows) ([]entities.Share, error) {
 	return shares, nil
 
 }
+
+
