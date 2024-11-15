@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"jumpStart-backEnd/entities"
 	"log"
 	"time"
 
@@ -28,7 +29,7 @@ func NewShareRepository(db *sql.DB) *ShareRepository {
 	return &ShareRepository{db: db}
 }
 
-func (repo *ShareRepository) FindAllShares() ([]Share, error) {
+func (repo *ShareRepository) FindAllShares() ([]entities.Share, error) {
 	numberSharesPerQuery, err := repo.DetermineNumberRowsToSearch()
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +70,7 @@ func (repo *ShareRepository) DetermineNumberRowsToSearch() (int, error) {
 	return numberRows, nil
 }
 
-func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]Share, error) {
+func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]entities.Share, error) {
 	numberSharesPerQuery, err := repo.DetermineNumberRowsToSearch()
 	if err != nil {
 		log.Fatal(err)
@@ -89,12 +90,12 @@ func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]Share, error) 
 
 }
 
-func buildShare(rows *sql.Rows) ([]Share, error) {
-	var shares []Share
+func buildShare(rows *sql.Rows) ([]entities.Share, error) {
+	var shares []entities.Share
 
 	for rows.Next() {
 		var dateShare time.Time
-		var share Share
+		var share entities.Share
 		err := rows.Scan(&share.Id, &share.NameShare, &dateShare, &share.OpenShare, &share.HighShare, &share.LowShare, &share.CloseShare, &share.VolumeShare)
 		if err != nil {
 			log.Fatal(err)

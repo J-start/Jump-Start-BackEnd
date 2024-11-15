@@ -3,8 +3,8 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"jumpStart-backEnd/entities"
 	"log"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -13,13 +13,6 @@ type NewsRepository struct {
 	db *sql.DB
 }
 
-
-type news struct {
-	Id      int
-	News    string
-	DateNews time.Time
-	IsApproved bool
-}
 
 func NewNewsRepository(db *sql.DB) *NewsRepository {
 	return &NewsRepository{db: db}
@@ -33,7 +26,7 @@ func (repo *NewsRepository) FindAllNews() {
 	defer rows.Close()
 
 	for rows.Next() {
-		var news news
+		var news entities.News
 		err := rows.Scan(&news.Id, &news.News, &news.DateNews, &news.IsApproved)
 		if err != nil {
 			log.Fatal(err)

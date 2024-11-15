@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"log"
 )
@@ -13,7 +14,7 @@ func NewShareUseCase(repo *repository.ShareRepository) *ShareUseCase {
 	return &ShareUseCase{repo: repo}
 }
 
-func (uc *ShareUseCase) FindAllShares() ([]repository.Share, error) {
+func (uc *ShareUseCase) FindAllShares() ([]entities.Share, error) {
 
 	shares, err := uc.repo.FindAllShares()
 	
@@ -23,7 +24,7 @@ func (uc *ShareUseCase) FindAllShares() ([]repository.Share, error) {
 	return shares, nil
 }
 
-func (uc *ShareUseCase) ListSharesBasedOffSet(offset int) ([]repository.Share, error) {
+func (uc *ShareUseCase) ListSharesBasedOffSet(offset int) ([]entities.Share, error) {
 
 	shares, err := uc.repo.ListSharesBasedOffSet(offset)
 	
