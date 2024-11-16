@@ -15,9 +15,10 @@ func NewShareController(useCase *usecase.ShareUseCase) *ShareController {
 	return &ShareController{useCase: useCase}
 }
 func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+    (*w).Header().Set("Access-Control-Allow-Origin", "*") 
+    (*w).Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS") 
+    (*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With") 
+
 }
 func (c *ShareController) GetTodaySharesJSON(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -75,10 +76,15 @@ func (c *ShareController) GetSharesSpecifyOffSet(w http.ResponseWriter, r *http.
 
 func (c *ShareController) GetShareById(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	if r.Method != "GET" {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	shareName := r.URL.Query().Get("shareName")
@@ -99,13 +105,17 @@ func (c *ShareController) GetShareById(w http.ResponseWriter, r *http.Request) {
 
 func (c *ShareController) GetShareList(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	if r.Method != "GET" {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	shareName := r.URL.Query().Get("shareName")
-	
+
 	shares, err := c.useCase.ShareList(shareName)
 
 	if err != nil {
