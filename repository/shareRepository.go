@@ -19,13 +19,8 @@ func NewShareRepository(db *sql.DB) *ShareRepository {
 }
 
 func (repo *ShareRepository) FindAllShares() ([]entities.Share, error) {
-	numberSharesPerQuery, err := repo.DetermineNumberRowsToSearch()
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-	query := fmt.Sprintf(`SELECT * FROM tb_share as ts WHERE ts.dateShare = '2024-10-12' ORDER BY ts.dateShare DESC LIMIT %d`, numberSharesPerQuery)
-	rows, err := repo.db.Query(query)
+
+	rows, err := repo.db.Query(`SELECT ts.* FROM tb_share ts WHERE ts.id IN ( SELECT MAX(id) FROM tb_share GROUP BY nameShare ) ORDER BY ts.nameShare`)
 
 	if err != nil {
 		log.Fatal(err)
