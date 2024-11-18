@@ -74,7 +74,7 @@ func (repo *ShareRepository) ListSharesBasedOffSet(offset int) ([]entities.Share
 
 func (repo *ShareRepository) FindShareById(shareName string) (entities.Share, error) {
 	var share []entities.Share
-	query := fmt.Sprintf(`SELECT * FROM tb_share WHERE nameShare = '%s' ORDER BY id DESC LIMIT 1`, shareName)
+	query := fmt.Sprintf(`SELECT * FROM tb_share WHERE nameShare = '%s' ORDER BY dateShare DESC LIMIT 1`, shareName)
 	rows, err := repo.db.Query(query)
 
 	if err != nil {
