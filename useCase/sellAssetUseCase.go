@@ -58,7 +58,7 @@ func buildUrl(typeAsset string, codeAsset string) (string, error) {
 }
 
 func (uc *SellAssetsUseCase) ManipulationAsset(assetOperation entities.AssetOperation) {
-	//TODO - Implemnetar lógica para verificar se a ação pode ser comprada ou vendida
+
 	var value float64
 	if assetOperation.AssetType != "SHARE" {
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
@@ -82,6 +82,12 @@ func (uc *SellAssetsUseCase) ManipulationAsset(assetOperation entities.AssetOper
 		}
 
 	} else {
+
+		if !isActionTradable(time.Now()) {
+			fmt.Println("Ação não pode ser comprada ou vendida")
+			return
+		}
+		
 		valueReturn, err := uc.getValueFromShare(assetOperation.AssetCode)
 		if err != nil {
 			fmt.Println(err)
@@ -162,4 +168,21 @@ func buildDatasToInsert(assetOperation entities.AssetOperation, value float64, i
 	}
 
 	return datasReturn
+}
+
+func isActionTradable(date time.Time ) bool {
+
+	OPEN := 10
+	CLOSE := 17
+
+	if date.Weekday() == time.Saturday || date.Weekday() == time.Sunday {
+		return false
+	}
+
+	if date.Hour() < OPEN || date.Hour() > CLOSE {
+		return false
+	}
+
+	return true
+
 }

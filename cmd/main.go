@@ -9,10 +9,17 @@ import (
 
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/useCase"
+	"fmt"
+	"time"
 )
 
 
 func main() {
+    now := time.Now()
+    fmt.Println(now)
+	fmt.Println("dia: ", now.Weekday())
+	
+
 	    asset := entities.AssetOperation{
 	    AssetName: "CHZ",
 	   	AssetCode: "CHZ-BRL",
