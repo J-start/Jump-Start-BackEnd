@@ -9,39 +9,34 @@ import (
 
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/useCase"
-	"fmt"
-	"time"
+	"jumpStart-backEnd/useCase/sell"
 )
 
 
 func main() {
-    now := time.Now()
-    fmt.Println(now)
-	fmt.Println("dia: ", now.Weekday())
-	
 
-	    // asset := entities.AssetOperation{
-	    // AssetName: "CHZ",
-	   	// AssetCode: "CHZ-BRL",
- 	 	// AssetType: "CRYPTO",
-	    // AssetAmount: 10,
-	    // OperationType: "SELL",
-	    // CodeInvestor: "123456",
-	    //  }
+	    //  asset := entities.AssetOperation{
+	    //  AssetName: "CHZ",
+	   	//  AssetCode: "CHZ-BRL",
+ 	 	//  AssetType: "CRYPTO",
+	    //  AssetAmount: 10,
+	    //  OperationType: "SELL",
+	    //  CodeInvestor: "123456",
+	    //   }
 
-	    asset := entities.AssetOperation{
-	    	AssetName: "PETROBRAS PN (PETR4.SA)",
-	    	AssetCode: "PETR4.SA",
-	    	AssetType: "SHARE",
-	    	AssetAmount: 10,
-	    	OperationType: "SELL",
-	    	CodeInvestor: "123456",
-	    }
+	     asset := entities.AssetOperation{
+	     	AssetName: "PETROBRAS PN (PETR4.SA)",
+	     	AssetCode: "PETR4.SA",
+	     	AssetType: "SHARE",
+	     	AssetAmount: 10,
+	     	OperationType: "SELL",
+	     	CodeInvestor: "123456",
+	     }
 
 	  db := db.GetDB()
       shareRepository := repository.NewShareRepository(db)
 	  shareUsecase := usecase.NewShareUseCase(shareRepository)
-	  newSellAssetsUseCase := usecase.NewSellAssetsUseCase(shareRepository,shareUsecase)
+	  newSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository,shareUsecase)
 	  newSellAssetsUseCase.ManipulationAsset(asset)
 
 	
