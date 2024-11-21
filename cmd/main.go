@@ -20,28 +20,31 @@ func main() {
 	fmt.Println("dia: ", now.Weekday())
 	
 
-	    asset := entities.AssetOperation{
-	    AssetName: "CHZ",
-	   	AssetCode: "CHZ-BRL",
- 	 	AssetType: "CRYPTO",
-	    AssetAmount: 10,
-	    OperationType: "SELL",
-	    CodeInvestor: "123456",
-	     }
+	    // asset := entities.AssetOperation{
+	    // AssetName: "CHZ",
+	   	// AssetCode: "CHZ-BRL",
+ 	 	// AssetType: "CRYPTO",
+	    // AssetAmount: 10,
+	    // OperationType: "SELL",
+	    // CodeInvestor: "123456",
+	    //  }
 
-	//    asset := entities.AssetOperation{
-	//    	AssetName: "PETROBRAS PN (PETR4.SA)",
-	//    	AssetCode: "PETR4.SA",
-	//    	AssetType: "SHARE",
-	//    	AssetAmount: 10,
-	//    	OperationType: "SELL",
-	//    	CodeInvestor: "123456",
-	//    }
+	    asset := entities.AssetOperation{
+	    	AssetName: "PETROBRAS PN (PETR4.SA)",
+	    	AssetCode: "PETR4.SA",
+	    	AssetType: "SHARE",
+	    	AssetAmount: 10,
+	    	OperationType: "SELL",
+	    	CodeInvestor: "123456",
+	    }
 
 	  db := db.GetDB()
       shareRepository := repository.NewShareRepository(db)
-	  shareUseCase := usecase.NewSellAssetsUseCase(shareRepository)
-	  shareUseCase.ManipulationAsset(asset)
+	  shareUsecase := usecase.NewShareUseCase(shareRepository)
+	  newSellAssetsUseCase := usecase.NewSellAssetsUseCase(shareRepository,shareUsecase)
+	  newSellAssetsUseCase.ManipulationAsset(asset)
+
+	
 
 	//  shareController := controller.NewShareController(shareUseCase)
 

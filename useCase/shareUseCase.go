@@ -10,6 +10,7 @@ import (
 
 type ShareUseCase struct {
 	repo *repository.ShareRepository
+
 }
 
 func NewShareUseCase(repo *repository.ShareRepository) *ShareUseCase {

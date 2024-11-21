@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"jumpStart-backEnd/entities"
@@ -18,10 +19,11 @@ type PairData struct {
 }
 type SellAssetsUseCase struct {
 	repo *repository.ShareRepository
+	shareUseCase *ShareUseCase
 }
 
-func NewSellAssetsUseCase(repo *repository.ShareRepository) *SellAssetsUseCase {
-	return &SellAssetsUseCase{repo: repo}
+func NewSellAssetsUseCase(repo *repository.ShareRepository,shareUseCase *ShareUseCase) *SellAssetsUseCase {
+	return &SellAssetsUseCase{repo: repo, shareUseCase: shareUseCase}
 }
 
 func MakeRequestAsset(assetType, assetCode string) (string, error) {
@@ -58,6 +60,11 @@ func buildUrl(typeAsset string, codeAsset string) (string, error) {
 }
 
 func (uc *SellAssetsUseCase) ManipulationAsset(assetOperation entities.AssetOperation) {
+	err := uc.isAssetValid(assetOperation.AssetCode)
+	if err != nil {
+		fmt.Println("Ação inválida")
+		return 
+	}
 
 	var value float64
 	if assetOperation.AssetType != "SHARE" {
@@ -87,11 +94,12 @@ func (uc *SellAssetsUseCase) ManipulationAsset(assetOperation entities.AssetOper
 			fmt.Println("Ação não pode ser comprada ou vendida")
 			return
 		}
-		
+
 		valueReturn, err := uc.getValueFromShare(assetOperation.AssetCode)
 		if err != nil {
 			fmt.Println(err)
 		}
+			
 		value = valueReturn
 	}
 
@@ -137,12 +145,6 @@ func getValueFromCrypto(response string) (float64, error) {
 }
 
 func (uc *SellAssetsUseCase) getValueFromShare(code string) (float64, error) {
-	//TODO - Implementar lógica JWT para obter o id do usuário
-	//TODO - Implemnetar lógica para verificar se a ação existe
-	if code == "" || len(strings.Split(code, " ")) == 0 || len(code) == 0 {
-		return 0, nil
-	}
-
 	share, err := uc.repo.FindShareById(code)
 
 	if err != nil {
@@ -174,15 +176,38 @@ func isActionTradable(date time.Time ) bool {
 
 	OPEN := 10
 	CLOSE := 17
-
-	if date.Weekday() == time.Saturday || date.Weekday() == time.Sunday {
+	
+	location, err := time.LoadLocation("America/Sao_Paulo")
+	if err != nil {
+		fmt.Println("Erro ao carregar o fuso horário:", err)
 		return false
 	}
 
-	if date.Hour() < OPEN || date.Hour() > CLOSE {
+	brazilTime := date.In(location)
+
+	if brazilTime.Weekday() == time.Saturday || brazilTime.Weekday() == time.Sunday {
+		return false
+	}
+
+	if brazilTime.Hour() < OPEN || brazilTime.Hour() > CLOSE {
 		return false
 	}
 
 	return true
+}
 
+func (uc *SellAssetsUseCase) isAssetValid(code string) error {
+	if code == "" || len(strings.Split(code, " ")) == 0 || len(code) == 0 {
+		return  errors.New("código de ativo inválido")
+	}
+
+	isContainName, err := uc.shareUseCase.ShareNameList(code)
+	if err != nil {
+		return  err
+	}
+	if !isContainName {
+		return  errors.New("ação não encontrada")
+	}
+
+	return  nil
 }
