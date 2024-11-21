@@ -15,28 +15,30 @@ import (
 
 func main() {
 
-	    //  asset := entities.AssetOperation{
-	    //  AssetName: "CHZ",
-	   	//  AssetCode: "CHZ-BRL",
- 	 	//  AssetType: "CRYPTO",
-	    //  AssetAmount: 10,
-	    //  OperationType: "SELL",
-	    //  CodeInvestor: "123456",
-	    //   }
+	      asset := entities.AssetOperation{
+	      AssetName: "CHZ",
+	   	  AssetCode: "CHZ-BRL",
+ 	 	  AssetType: "CRYPTO",
+	      AssetAmount: 10,
+	      OperationType: "SELL",
+	      CodeInvestor: "123456",
+	       }
 
-	     asset := entities.AssetOperation{
-	     	AssetName: "PETROBRAS PN (PETR4.SA)",
-	     	AssetCode: "PETR4.SA",
-	     	AssetType: "SHARE",
-	     	AssetAmount: 10,
-	     	OperationType: "SELL",
-	     	CodeInvestor: "123456",
-	     }
+	    //  asset := entities.AssetOperation{
+	    //  	AssetName: "PETROBRAS PN (PETR4.SA)",
+	    //  	AssetCode: "PETR4.SA",
+	    //  	AssetType: "SHARE",
+	    //  	AssetAmount: 10,
+	    //  	OperationType: "SELL",
+	    //  	CodeInvestor: "123456",
+	    //  }
 
 	  db := db.GetDB()
       shareRepository := repository.NewShareRepository(db)
+	  walletRepository := repository.NewWalletRepository(db)
+	  operationAssetRepository := repository.NewOperationAssetRepository(db)
 	  shareUsecase := usecase.NewShareUseCase(shareRepository)
-	  newSellAssetsUseCase := buy.NewSellAssetsUseCase(shareRepository,shareUsecase)
+	  newSellAssetsUseCase := buy.NewSellAssetsUseCase(shareRepository,shareUsecase,walletRepository,operationAssetRepository)
 	  newSellAssetsUseCase.BuyAsset(asset)
 	  
 

@@ -11,13 +11,14 @@ import (
 )
 
 type SellAssetsUseCase struct {
-	repo             *repository.ShareRepository
-	shareUseCase     *usecase.ShareUseCase
-	walletRepository *repository.WalletRepository
+	repo             			*repository.ShareRepository
+	shareUseCase     			*usecase.ShareUseCase
+	walletRepository 			*repository.WalletRepository
+	operationAssetRepository	*repository.OperationAssetRepository
 }
 
-func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase) *SellAssetsUseCase {
-	return &SellAssetsUseCase{repo: repo, shareUseCase: shareUseCase}
+func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase,walletRepository *repository.WalletRepository, operationAssetRepository *repository.OperationAssetRepository) *SellAssetsUseCase {
+	return &SellAssetsUseCase{repo: repo, shareUseCase: shareUseCase, walletRepository: walletRepository, operationAssetRepository: operationAssetRepository}
 }
 
 func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
@@ -71,15 +72,22 @@ func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
     datasToInsert := buildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
 	errBuy := uc.verifyIfInvestorCanBuy(1, valueOperation)
-	
+	datasToInsert.AssetValue = valueOperation
+
 	if errBuy != nil {
 		fmt.Println(errBuy)
 		return
 	}
 
+	err = uc.operationAssetRepository.InsertOperationAsset(datasToInsert)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 
-	fmt.Println(buildDatasToInsert(assetOperation, value, 1))
+	fmt.Println("Operação realizada com sucesso")
 }
 
 func (uc *SellAssetsUseCase) getValueFromShare(code string) (float64, error) {
@@ -107,6 +115,7 @@ func (uc *SellAssetsUseCase) isAssetValid(code string) error {
 }
 
 func (uc *SellAssetsUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
+	
 	balance, err := uc.walletRepository.FindBalanceInvestor(id)
 
 	if err != nil {
@@ -122,7 +131,6 @@ func (uc *SellAssetsUseCase) verifyIfInvestorCanBuy(id int, value float64) error
 	}
 
 	return nil
-
 }
 
 

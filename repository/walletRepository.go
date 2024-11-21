@@ -14,7 +14,7 @@ type WalletRepository struct {
 }
 
 
-func NewWalletRepoository(db *sql.DB) *WalletRepository {
+func NewWalletRepository(db *sql.DB) *WalletRepository {
 	return &WalletRepository{db: db}
 }
 
