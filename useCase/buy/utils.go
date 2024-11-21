@@ -1,10 +1,13 @@
 package buy
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"jumpStart-backEnd/entities"
+	
 )
 
 func isActionTradable(date time.Time) bool {
@@ -44,4 +47,30 @@ func buildDatasToInsert(assetOperation entities.AssetOperation, value float64, i
 		IdInvestor:         idInvestor,
 		IsProcessedAlready: false,
 	}
+}
+
+func ValidateFields(assetOperation entities.AssetOperation) error{
+
+	if assetOperation.AssetAmount <= 0 {
+		return errors.New("quantidade de ativos inválida")
+	}
+
+	if assetOperation.AssetType != "CRYPTO" && assetOperation.AssetType != "COIN" && assetOperation.AssetType != "SHARE" {
+		return errors.New("tipo de ativo inválido")
+	}
+
+	if assetOperation.OperationType != "BUY" && assetOperation.OperationType != "SELL" {
+		return errors.New("tipo de operação inválido")
+	}
+
+	if assetOperation.AssetCode == "" {
+		return errors.New("código de ativo inválido")
+	}
+
+	if assetOperation.AssetName == "" || len(strings.Split(assetOperation.AssetName, " ")) == 0 || len(assetOperation.AssetName) == 0 || len(assetOperation.AssetName) > 255 {
+		return errors.New("nome de ativo inválido")
+	}
+	
+	return nil
+
 }

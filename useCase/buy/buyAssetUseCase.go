@@ -11,8 +11,9 @@ import (
 )
 
 type SellAssetsUseCase struct {
-	repo         *repository.ShareRepository
-	shareUseCase *usecase.ShareUseCase
+	repo             *repository.ShareRepository
+	shareUseCase     *usecase.ShareUseCase
+	walletRepository *repository.WalletRepository
 }
 
 func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase) *SellAssetsUseCase {
@@ -20,8 +21,15 @@ func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecas
 }
 
 func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
+
+	err := ValidateFields(assetOperation)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	var value float64
-	
+
 	if assetOperation.AssetType != "SHARE" {
 
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
@@ -60,6 +68,16 @@ func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
 		}
 		value = valueReturn
 	}
+    datasToInsert := buildDatasToInsert(assetOperation, value, 1)
+	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
+	errBuy := uc.verifyIfInvestorCanBuy(1, valueOperation)
+	
+	if errBuy != nil {
+		fmt.Println(errBuy)
+		return
+	}
+
+
 
 	fmt.Println(buildDatasToInsert(assetOperation, value, 1))
 }
@@ -88,7 +106,23 @@ func (uc *SellAssetsUseCase) isAssetValid(code string) error {
 	return nil
 }
 
-func (uc *SellAssetsUseCase) verifyBalanceInvestor(code string) error {
- return nil
+func (uc *SellAssetsUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
+	balance, err := uc.walletRepository.FindBalanceInvestor(id)
+
+	if err != nil {
+		return err
+	}
+
+	if balance == 0 {
+		return errors.New("saldo insuficiente")
+	}
+
+	if balance < value {
+		return errors.New("saldo insuficiente")
+	}
+
+	return nil
 
 }
+
+
