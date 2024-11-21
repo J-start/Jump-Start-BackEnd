@@ -1,4 +1,4 @@
-package sell
+package buy
 
 import (
 	"errors"
@@ -19,9 +19,11 @@ func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecas
 	return &SellAssetsUseCase{repo: repo, shareUseCase: shareUseCase}
 }
 
-func (uc *SellAssetsUseCase) ManipulationAsset(assetOperation entities.AssetOperation) {
+func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
 	var value float64
+	
 	if assetOperation.AssetType != "SHARE" {
+
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
 		if err != nil {
 			fmt.Println(err)
@@ -84,4 +86,9 @@ func (uc *SellAssetsUseCase) isAssetValid(code string) error {
 	}
 
 	return nil
+}
+
+func (uc *SellAssetsUseCase) verifyBalanceInvestor(code string) error {
+ return nil
+
 }

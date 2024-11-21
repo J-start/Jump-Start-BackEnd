@@ -6,10 +6,10 @@ import (
 	  "jumpStart-backEnd/repository"
 	// "log"
 	// "net/http"
-
+	"jumpStart-backEnd/useCase/buy"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/useCase"
-	"jumpStart-backEnd/useCase/sell"
+
 )
 
 
@@ -36,8 +36,9 @@ func main() {
 	  db := db.GetDB()
       shareRepository := repository.NewShareRepository(db)
 	  shareUsecase := usecase.NewShareUseCase(shareRepository)
-	  newSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository,shareUsecase)
-	  newSellAssetsUseCase.ManipulationAsset(asset)
+	  newSellAssetsUseCase := buy.NewSellAssetsUseCase(shareRepository,shareUsecase)
+	  newSellAssetsUseCase.BuyAsset(asset)
+	  
 
 	
 
