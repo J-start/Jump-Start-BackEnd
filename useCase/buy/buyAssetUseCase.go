@@ -10,23 +10,23 @@ import (
 	"time"
 )
 
-type SellAssetsUseCase struct {
-	repo             			*repository.ShareRepository
-	shareUseCase     			*usecase.ShareUseCase
-	walletRepository 			*repository.WalletRepository
-	operationAssetRepository	*repository.OperationAssetRepository
+type BuyAssetUseCase struct {
+	repo                     *repository.ShareRepository
+	shareUseCase             *usecase.ShareUseCase
+	walletRepository         *repository.WalletRepository
+	operationAssetRepository *repository.OperationAssetRepository
 }
 
-func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase,walletRepository *repository.WalletRepository, operationAssetRepository *repository.OperationAssetRepository) *SellAssetsUseCase {
-	return &SellAssetsUseCase{repo: repo, shareUseCase: shareUseCase, walletRepository: walletRepository, operationAssetRepository: operationAssetRepository}
+func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletRepository *repository.WalletRepository, operationAssetRepository *repository.OperationAssetRepository) *BuyAssetUseCase {
+	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletRepository: walletRepository, operationAssetRepository: operationAssetRepository}
 }
 
-func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
+func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) error {
 
 	err := ValidateFields(assetOperation)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return errors.New("algum campo está inválido")
 	}
 
 	var value float64
@@ -35,32 +35,32 @@ func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
 
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
 		if err != nil {
-			fmt.Println(err)
+			return errors.New("ocorreu um erro ao tentar buscar o ativo")
 		}
 
 		if assetOperation.AssetType == "COIN" {
 			valueReturn, err := getValueFromCoin(response, assetOperation.AssetCode)
 			if err != nil {
-				fmt.Println(err)
+				return errors.New("ocorreu um erro ao buscar o valor da moeda")
 			}
 			value = valueReturn
 		} else if assetOperation.AssetType == "CRYPTO" {
 			valueReturn, err := getValueFromCrypto(response)
 			if err != nil {
-				fmt.Println(err)
+				return errors.New("ocorreu um erro ao buscar o valor da cryptomoeda")
 			}
 			value = valueReturn
 		}
 	} else {
 		if !isActionTradable(time.Now()) {
 			fmt.Println("Ação não pode ser comprada ou vendida")
-			return
+			return errors.New("o mercado está fechado.Não é possível comprar ou vender ações")
 		}
 
 		err := uc.isAssetValid(assetOperation.AssetCode)
 		if err != nil {
 			fmt.Println("Ação inválida")
-			return
+			return errors.New("ação inválida")
 		}
 
 		valueReturn, err := uc.getValueFromShare(assetOperation.AssetCode)
@@ -69,28 +69,29 @@ func (uc *SellAssetsUseCase) BuyAsset(assetOperation entities.AssetOperation) {
 		}
 		value = valueReturn
 	}
-    datasToInsert := buildDatasToInsert(assetOperation, value, 1)
+	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
 	errBuy := uc.verifyIfInvestorCanBuy(1, valueOperation)
 	datasToInsert.AssetValue = valueOperation
 
 	if errBuy != nil {
 		fmt.Println(errBuy)
-		return
+		return errors.New("saldo insuficiente")
 	}
 
 	err = uc.operationAssetRepository.InsertOperationAsset(datasToInsert)
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return errors.New("ocorreu algum erro quando tentamos concluir a operação, tente novamente")
 	}
 
-
 	fmt.Println("Operação realizada com sucesso")
+
+	return nil
 }
 
-func (uc *SellAssetsUseCase) getValueFromShare(code string) (float64, error) {
+func (uc *BuyAssetUseCase) getValueFromShare(code string) (float64, error) {
 	share, err := uc.repo.FindShareById(code)
 	if err != nil {
 		return 0, err
@@ -98,7 +99,7 @@ func (uc *SellAssetsUseCase) getValueFromShare(code string) (float64, error) {
 	return share.CloseShare, nil
 }
 
-func (uc *SellAssetsUseCase) isAssetValid(code string) error {
+func (uc *BuyAssetUseCase) isAssetValid(code string) error {
 	if code == "" || len(strings.Split(code, " ")) == 0 || len(code) == 0 {
 		return errors.New("código de ativo inválido")
 	}
@@ -114,8 +115,8 @@ func (uc *SellAssetsUseCase) isAssetValid(code string) error {
 	return nil
 }
 
-func (uc *SellAssetsUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
-	
+func (uc *BuyAssetUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
+
 	balance, err := uc.walletRepository.FindBalanceInvestor(id)
 
 	if err != nil {
@@ -132,5 +133,3 @@ func (uc *SellAssetsUseCase) verifyIfInvestorCanBuy(id int, value float64) error
 
 	return nil
 }
-
-
