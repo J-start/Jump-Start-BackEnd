@@ -2,12 +2,12 @@ package buy
 
 import (
 	"errors"
-	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase"
 	"strings"
 	"time"
+	"net/http"
 )
 
 type BuyAssetUseCase struct {
@@ -21,12 +21,11 @@ func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase
 	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletRepository: walletRepository, operationAssetRepository: operationAssetRepository}
 }
 
-func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) error {
+func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
 
 	err := ValidateFields(assetOperation)
 	if err != nil {
-		fmt.Println(err)
-		return errors.New("algum campo está inválido")
+		return http.StatusNotAcceptable, strings.ToUpper(string(err.Error()[0])) + err.Error()[1:]
 	}
 
 	var value float64
@@ -35,60 +34,56 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) erro
 
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
 		if err != nil {
-			return errors.New("ocorreu um erro ao tentar buscar o ativo")
+			return http.StatusInternalServerError, "Algum campo está inválido"
 		}
 
 		if assetOperation.AssetType == "COIN" {
 			valueReturn, err := getValueFromCoin(response, assetOperation.AssetCode)
 			if err != nil {
-				return errors.New("ocorreu um erro ao buscar o valor da moeda")
+				return http.StatusInternalServerError, "Ocorreu um erro ao buscar o valor da moeda, tente novamente"
 			}
 			value = valueReturn
 		} else if assetOperation.AssetType == "CRYPTO" {
 			valueReturn, err := getValueFromCrypto(response)
 			if err != nil {
-				return errors.New("ocorreu um erro ao buscar o valor da cryptomoeda")
+				return http.StatusInternalServerError, "Ocorreu um erro ao buscar o valor da cryptomoeda, tente novamente"
 			}
 			value = valueReturn
 		}
 	} else {
 		if !isActionTradable(time.Now()) {
-			fmt.Println("Ação não pode ser comprada ou vendida")
-			return errors.New("o mercado está fechado.Não é possível comprar ou vender ações")
+			return http.StatusNotAcceptable, "O mercado está fechado.Não é possível comprar ou vender ações"
 		}
 
 		err := uc.isAssetValid(assetOperation.AssetCode)
 		if err != nil {
-			fmt.Println("Ação inválida")
-			return errors.New("ação inválida")
+			return http.StatusNotAcceptable, "Ação inválida"
 		}
 
 		valueReturn, err := uc.getValueFromShare(assetOperation.AssetCode)
 		if err != nil {
-			fmt.Println(err)
+			return http.StatusNotAcceptable, "Problema ao consultar o valor da ação, tente novamente"
 		}
 		value = valueReturn
 	}
 	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
+	
 	errBuy := uc.verifyIfInvestorCanBuy(1, valueOperation)
+	
 	datasToInsert.AssetValue = valueOperation
 
 	if errBuy != nil {
-		fmt.Println(errBuy)
-		return errors.New("saldo insuficiente")
+		return http.StatusNotAcceptable, "Saldo insuficiente"
 	}
 
 	err = uc.operationAssetRepository.InsertOperationAsset(datasToInsert)
 
 	if err != nil {
-		fmt.Println(err)
-		return errors.New("ocorreu algum erro quando tentamos concluir a operação, tente novamente")
+		return http.StatusInternalServerError, "Ocorreu algum erro quando tentamos concluir a operação, tente novamente"
 	}
 
-	fmt.Println("Operação realizada com sucesso")
-
-	return nil
+	return 200,"Operação realizada com sucesso"
 }
 
 func (uc *BuyAssetUseCase) getValueFromShare(code string) (float64, error) {
@@ -109,7 +104,7 @@ func (uc *BuyAssetUseCase) isAssetValid(code string) error {
 		return err
 	}
 	if !isContainName {
-		return errors.New("ação não encontrada")
+		return errors.New("nome de ação inválida")
 	}
 
 	return nil
@@ -124,11 +119,13 @@ func (uc *BuyAssetUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
 	}
 
 	if balance == 0 {
-		return errors.New("saldo insuficiente")
+
+		return errors.New("saldo invalido")
 	}
 
 	if balance < value {
-		return errors.New("saldo insuficiente")
+
+		return errors.New("saldo invalido")
 	}
 
 	return nil

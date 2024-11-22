@@ -6,6 +6,7 @@ import (
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/useCase/buy"
 	"net/http"
+	"jumpStart-backEnd/handleError"
 	//"strconv"
 )
 
@@ -34,16 +35,14 @@ func (bac *BuyAssetController) BuyAsset(w http.ResponseWriter, r *http.Request) 
 	var asset entities.AssetOperation
 
 	err := json.NewDecoder(r.Body).Decode(&asset)
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = bac.useCase.BuyAsset(asset)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	codeError,message := bac.useCase.BuyAsset(asset)
+		handleError.WriteHTTPStatus(w, codeError, message)
 		return
-	}
 }
 

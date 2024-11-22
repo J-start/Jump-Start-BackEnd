@@ -2,7 +2,6 @@ package buy
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -16,7 +15,6 @@ func isActionTradable(date time.Time) bool {
 
 	location, err := time.LoadLocation("America/Sao_Paulo")
 	if err != nil {
-		fmt.Println("Erro ao carregar o fuso horário:", err)
 		return false
 	}
 
@@ -60,7 +58,7 @@ func ValidateFields(assetOperation entities.AssetOperation) error{
 	}
 
 	if assetOperation.OperationType != "BUY" && assetOperation.OperationType != "SELL" {
-		return errors.New("tipo de operação inválido")
+		return errors.New("tipo de operação inválidA")
 	}
 
 	if assetOperation.AssetCode == "" {
