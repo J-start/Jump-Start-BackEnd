@@ -5,6 +5,7 @@ import (
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase"
+	"jumpStart-backEnd/useCase/wallet"
 	"strings"
 	"time"
 	"net/http"
@@ -13,12 +14,12 @@ import (
 type BuyAssetUseCase struct {
 	repo                     *repository.ShareRepository
 	shareUseCase             *usecase.ShareUseCase
-	walletRepository         *repository.WalletRepository
+	walletUseCase            *wallet.WalletUseCase
 	operationAssetRepository *repository.OperationAssetRepository
 }
 
-func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletRepository *repository.WalletRepository, operationAssetRepository *repository.OperationAssetRepository) *BuyAssetUseCase {
-	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletRepository: walletRepository, operationAssetRepository: operationAssetRepository}
+func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetRepository *repository.OperationAssetRepository) *BuyAssetUseCase {
+	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetRepository: operationAssetRepository}
 }
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
@@ -34,7 +35,7 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 
 		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
 		if err != nil {
-			return http.StatusInternalServerError, "Algum campo está inválido"
+			return http.StatusInternalServerError, "Ativo inválido"
 		}
 
 		if assetOperation.AssetType == "COIN" {
@@ -69,7 +70,7 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
 	
-	errBuy := uc.verifyIfInvestorCanBuy(1, valueOperation)
+	errBuy := uc.walletUseCase.VerifyIfInvestorCanOperate(1, valueOperation)
 	
 	datasToInsert.AssetValue = valueOperation
 
@@ -81,6 +82,11 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 
 	if err != nil {
 		return http.StatusInternalServerError, "Ocorreu algum erro quando tentamos concluir a operação, tente novamente"
+	}
+
+	errWallet := uc.walletUseCase.InsertValueBalance(1, -valueOperation)
+	if errWallet != nil {
+		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o saldo do usuário, tente novamente"
 	}
 
 	return 200,"Operação realizada com sucesso"
@@ -110,23 +116,4 @@ func (uc *BuyAssetUseCase) isAssetValid(code string) error {
 	return nil
 }
 
-func (uc *BuyAssetUseCase) verifyIfInvestorCanBuy(id int, value float64) error {
 
-	balance, err := uc.walletRepository.FindBalanceInvestor(id)
-
-	if err != nil {
-		return err
-	}
-
-	if balance == 0 {
-
-		return errors.New("saldo invalido")
-	}
-
-	if balance < value {
-
-		return errors.New("saldo invalido")
-	}
-
-	return nil
-}

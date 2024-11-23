@@ -59,7 +59,7 @@ func ValidateFields(assetOperation entities.AssetOperation) error{
 	}
 
 	if assetOperation.OperationType != "BUY" && assetOperation.OperationType != "SELL" {
-		return errors.New("tipo de operação inválidA")
+		return errors.New("tipo de operação inválida")
 	}
 
 	if assetOperation.AssetCode == "" {
