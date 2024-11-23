@@ -39,6 +39,7 @@ func buildDatasToInsert(assetOperation entities.AssetOperation, value float64, i
 		AssetName:          assetOperation.AssetName,
 		AssetType:          assetOperation.AssetType,
 		AssetAmount:        assetOperation.AssetAmount,
+		AssetCode:          assetOperation.AssetCode,
 		AssetValue:         value,
 		OperationType:      assetOperation.OperationType,
 		OperationDate:      formattedDate,

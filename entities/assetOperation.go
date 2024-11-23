@@ -14,6 +14,7 @@ type AssetInsertDataBase struct {
 	IdAsset            int
 	AssetName          string
 	AssetType          string
+	AssetCode		   string
 	AssetAmount        float64
 	AssetValue         float64
 	OperationType      string

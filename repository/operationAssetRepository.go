@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"jumpStart-backEnd/entities"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,14 +15,33 @@ type OperationAssetRepository struct {
 func NewOperationAssetRepository(db *sql.DB) *OperationAssetRepository {
 	return &OperationAssetRepository{db: db}
 }
-
-func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetInsertDataBase) (error) {
+func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetInsertDataBase) error {
 	
-	query := fmt.Sprintf(`INSERT INTO tb_operationAsset(assetName,assetType,assetQuantity,assetValue,operationType,operationDate,idInvestor,isProcessedAlready) VALUES ('%s','%s',%f,%f,'%s','%s',%d,%t)`, datas.AssetName, datas.AssetType, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
-
-	_, err := oar.db.Exec(query)
-
+	tx, err := oar.db.Begin()
 	if err != nil {
+		return err
+	}
+
+	query := `INSERT INTO tb_operationAsset(assetName, assetType,assetCode, assetQuantity, assetValue, operationType, operationDate, idInvestor, isProcessedAlready) 
+	          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		tx.Rollback() 
+		return err
+	}
+	defer stmt.Close()
+
+	
+	_, err = stmt.Exec(datas.AssetName, datas.AssetType,datas.AssetCode, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
+	if err != nil {
+		tx.Rollback() 
+		return err
+	}
+
+	
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback() 
 		return err
 	}
 
