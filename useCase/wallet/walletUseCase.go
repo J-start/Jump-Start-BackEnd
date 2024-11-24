@@ -22,15 +22,10 @@ func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64,idOpera
 	}
 	balance += value
 
-	errInsert := uc.repo.UpdateBalanceInvestor(idInvestor, balance)
+	errInsert := uc.repo.UpdateBalanceInvestor(idInvestor, balance,idOperation)
 
 	if errInsert != nil {
 		return errors.New("erro ao atualizar o saldo")
-	}
-
-	errChange := uc.operationAssetUseCase.ChangeStateOperation(int(idOperation))
-	if errChange != nil {
-		return errors.New("erro ao atualizar o estado da operação")
 	}
 
 	return nil

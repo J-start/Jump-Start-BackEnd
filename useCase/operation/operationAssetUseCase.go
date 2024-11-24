@@ -1,7 +1,6 @@
 package operation
 
 import (
-	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 )
@@ -22,13 +21,6 @@ func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsert
 	return idOperation,nil
 }
 
-func (uc *OperationAssetUseCase) ChangeStateOperation(idOperation int) error {
-	err := uc.repo.ChangeStateOperation(idOperation)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	return nil
-}
+
 
 

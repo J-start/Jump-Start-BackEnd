@@ -33,12 +33,11 @@ func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetIn
 	defer stmt.Close()
 
 	
-	result, err := stmt.Exec(datas.AssetName, datas.AssetType,datas.AssetCode, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
+	result, err := stmt.Exec(query,datas.AssetName, datas.AssetType,datas.AssetCode, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
 	if err != nil {
 		tx.Rollback() 
 		return -1,err
 	}
-	fmt.Println(result.LastInsertId())
 
 	idOperation, err := result.LastInsertId()
 	if err != nil {
@@ -51,19 +50,9 @@ func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetIn
 		tx.Rollback() 
 		return -1,err
 	}
-
+	fmt.Println("idOperation",idOperation)
 	return idOperation,nil
 }
 
 
-func (oar *OperationAssetRepository) ChangeStateOperation(idOperation int) (error) {
-	
-	query := fmt.Sprintf(`UPDATE tb_operationAsset SET isProcessedAlready = 1 WHERE idAsset = %d`, idOperation)
-	_, err := oar.db.Exec(query)
-	fmt.Println(query)
-	if err != nil {
-		return err
-	}
 
-	return nil
-}

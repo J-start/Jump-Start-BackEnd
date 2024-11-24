@@ -34,8 +34,7 @@ func (wr *WalletRepository) FindBalanceInvestor(id int) (float64, error) {
 	return balance, nil
 }
 
-func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64) error {
-
+func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64, idOperation int64) error {
 	tx, err := wr.db.Begin()
 	if err != nil {
 		return err
@@ -55,6 +54,26 @@ func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64) error {
 		return err
 	}
 
+	query = `UPDATE tb_operationAsset SET isProcessedAlready = 1 WHERE idAsset = ?`
+	stmt, err = tx.Prepare(query)
+	if err != nil {
+		tx.Rollback()
+		errDelete := wr.deleteOpreation(int(idOperation))
+		if errDelete != nil {
+			return errDelete
+		}
+		return err
+	}
+	_, err = stmt.Exec(idOperation)
+	if err != nil {
+		tx.Rollback()
+		errDelete := wr.deleteOpreation(int(idOperation))
+		if errDelete != nil {
+			return errDelete
+		}
+		return err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
@@ -64,7 +83,7 @@ func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64) error {
 	return nil
 }
 
-func (wr *WalletRepository) IsBalanceExists(id int) (float64,error) {
+func (wr *WalletRepository) IsBalanceExists(id int) (float64, error) {
 	var balance float64
 
 	query := fmt.Sprintf(`SELECT balance FROM tb_wallet WHERE idInvestor = %d`, id)
@@ -73,16 +92,16 @@ func (wr *WalletRepository) IsBalanceExists(id int) (float64,error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0,errors.New("nenhum dado encontrado")
+			return 0, errors.New("nenhum dado encontrado")
 		} else {
-			return 0,errors.New("erro ao executar a consulta")
+			return 0, errors.New("erro ao executar a consulta")
 		}
 	}
 
-	return balance,nil
+	return balance, nil
 }
 
-func (wr *WalletRepository) CreateBalanceUser(id int) error{
+func (wr *WalletRepository) CreateBalanceUser(id int) error {
 	tx, err := wr.db.Begin()
 	if err != nil {
 		return err
@@ -111,3 +130,14 @@ func (wr *WalletRepository) CreateBalanceUser(id int) error{
 	return nil
 }
 
+func (wr *WalletRepository) deleteOpreation(idOperation int) error {
+	query := fmt.Sprintf(`DELETE FROM tb_operationAsset WHERE idAsset = %d `, idOperation)
+	_, err := wr.db.Exec(query)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
