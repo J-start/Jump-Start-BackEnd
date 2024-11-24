@@ -5,21 +5,22 @@ import (
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase"
+	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/wallet"
+	"net/http"
 	"strings"
 	"time"
-	"net/http"
 )
 
 type BuyAssetUseCase struct {
 	repo                     *repository.ShareRepository
 	shareUseCase             *usecase.ShareUseCase
 	walletUseCase            *wallet.WalletUseCase
-	operationAssetRepository *repository.OperationAssetRepository
+	operationAssetUseCase    *operation.OperationAssetUseCase
 }
 
-func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetRepository *repository.OperationAssetRepository) *BuyAssetUseCase {
-	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetRepository: operationAssetRepository}
+func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase) *BuyAssetUseCase {
+	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetUseCase: operationAssetUseCase}
 }
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
@@ -78,13 +79,13 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 		return http.StatusNotAcceptable, "Saldo insuficiente"
 	}
 
-	err = uc.operationAssetRepository.InsertOperationAsset(datasToInsert)
+	idOperation,err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
 
 	if err != nil {
 		return http.StatusInternalServerError, "Ocorreu algum erro quando tentamos concluir a operação, tente novamente"
 	}
 
-	errWallet := uc.walletUseCase.InsertValueBalance(1, -valueOperation)
+	errWallet := uc.walletUseCase.InsertValueBalance(1, -valueOperation,idOperation)
 	if errWallet != nil {
 		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o saldo do usuário, tente novamente"
 	}

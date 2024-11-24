@@ -10,6 +10,7 @@ import (
 	//"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/useCase"
 	"jumpStart-backEnd/useCase/wallet"
+	"jumpStart-backEnd/useCase/operation"
 )
 
 func main() {
@@ -37,9 +38,10 @@ func main() {
 	walletRepository := repository.NewWalletRepository(db)
 	operationAssetRepository := repository.NewOperationAssetRepository(db)
 
-	walletUseCase := wallet.NewWalletUseCase(walletRepository)
+	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
+	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
-	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetRepository)
+	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase)
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
 
 	shareController := controller.NewShareController(shareUsecase)

@@ -3,17 +3,19 @@ package wallet
 import (
 	"errors"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/useCase/operation"
 )
 
 type WalletUseCase struct {
-	repo *repository.WalletRepository
+	repo 				*repository.WalletRepository
+	operationAssetUseCase *operation.OperationAssetUseCase
 }
 
-func NewWalletUseCase(repo *repository.WalletRepository) *WalletUseCase {
-	return &WalletUseCase{repo: repo}
+func NewWalletUseCase(repo *repository.WalletRepository,operationAssetUseCase *operation.OperationAssetUseCase) *WalletUseCase {
+	return &WalletUseCase{repo: repo,operationAssetUseCase : operationAssetUseCase}
 }
 
-func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64) error {
+func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64,idOperation int64) error {
 	balance,err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return errors.New("erro ao verificar saldo do usuário")
@@ -26,7 +28,13 @@ func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64) error 
 		return errors.New("erro ao atualizar o saldo")
 	}
 
+	errChange := uc.operationAssetUseCase.ChangeStateOperation(int(idOperation))
+	if errChange != nil {
+		return errors.New("erro ao atualizar o estado da operação")
+	}
+
 	return nil
+
 }
 
 func (uc *WalletUseCase) isInvestorValid(idInvestor int) (float64,error) {
