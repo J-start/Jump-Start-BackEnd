@@ -6,6 +6,7 @@ import (
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase/assetwallet"
 	"jumpStart-backEnd/useCase/buy"
+	"jumpStart-backEnd/useCase/sell"
 	"log"
 	"net/http"
 
@@ -46,8 +47,10 @@ func main() {
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase)
+	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase)
+	
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
-
+	sellAssetController := controller.NewSellAssetController(NewSellAssetsUseCase)
 	shareController := controller.NewShareController(shareUsecase)
 
 	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
@@ -55,6 +58,7 @@ func main() {
 	http.HandleFunc("/data/share/", shareController.GetShareById)
 	http.HandleFunc("/datas/share/", shareController.GetShareList)
 	http.HandleFunc("/buy/", BuyAssetController.BuyAsset)
+	http.HandleFunc("/sell/", sellAssetController.SellAsset)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }

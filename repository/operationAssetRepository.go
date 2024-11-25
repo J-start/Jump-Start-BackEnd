@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"jumpStart-backEnd/entities"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -50,7 +49,6 @@ func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetIn
 		tx.Rollback() 
 		return -1,err
 	}
-	fmt.Println("idOperation",idOperation)
 	return idOperation,nil
 }
 

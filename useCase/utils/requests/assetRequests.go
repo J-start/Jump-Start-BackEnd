@@ -1,4 +1,4 @@
-package buy
+package requests
 
 import (
 	"encoding/json"
@@ -51,7 +51,7 @@ func buildUrl(typeAsset, codeAsset string) (string, error) {
 	return "", fmt.Errorf("tipo de ativo não encontrado")
 }
 
-func getValueFromCoin(response, code string) (float64, error) {
+func GetValueFromCoin(response, code string) (float64, error) {
 	if len(response) == 0{
 		return 0,errors.New("moeda inválida")
 	}
@@ -74,7 +74,7 @@ func getValueFromCoin(response, code string) (float64, error) {
 	return bidFloat, nil
 }
 
-func getValueFromCrypto(response string) (float64, error) {
+func GetValueFromCrypto(response string) (float64, error) {
 	if len(response) == 0{
 		return 0,errors.New("crypto inválida")
 	}

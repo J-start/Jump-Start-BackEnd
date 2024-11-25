@@ -2,7 +2,6 @@ package buy
 
 import (
 	"errors"
-	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase"
@@ -28,105 +27,114 @@ func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
 
-	err := ValidateFields(assetOperation)
+	if err := uc.validateBuyAssetInput(assetOperation); err != nil {
+		return http.StatusNotAcceptable, err.Error()
+	}
+
+	value, err := uc.getAssetValue(assetOperation)
 	if err != nil {
-		return http.StatusNotAcceptable, strings.ToUpper(string(err.Error()[0])) + err.Error()[1:]
+		return http.StatusNotAcceptable, err.Error()
 	}
 
-	var value float64
-
-	if assetOperation.AssetType != "SHARE" {
-
-		response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
-		if err != nil {
-			return http.StatusInternalServerError, "Ativo inválido"
-		}
-
-		if assetOperation.AssetType == "COIN" {
-			valueReturn, err := getValueFromCoin(response, assetOperation.AssetCode)
-			if err != nil {
-				return http.StatusInternalServerError, "Ocorreu um erro ao buscar o valor da moeda, tente novamente"
-			}
-			value = valueReturn
-		} else if assetOperation.AssetType == "CRYPTO" {
-			valueReturn, err := getValueFromCrypto(response)
-			if err != nil {
-				return http.StatusInternalServerError, "Ocorreu um erro ao buscar o valor da cryptomoeda, tente novamente"
-			}
-			value = valueReturn
-		}
-	} else {
-		if !isActionTradable(time.Now()) {
-			return http.StatusNotAcceptable, "O mercado está fechado.Não é possível comprar ou vender ações"
-		}
-
-		err := uc.isAssetValid(assetOperation.AssetCode)
-		if err != nil {
-			return http.StatusNotAcceptable, "Ação inválida"
-		}
-
-		valueReturn, err := uc.getValueFromShare(assetOperation.AssetCode)
-		if err != nil {
-			return http.StatusNotAcceptable, "Problema ao consultar o valor da ação, tente novamente"
-		}
-		value = valueReturn
-	}
-	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
-	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
-	assetAmount := datasToInsert.AssetAmount
-	
-	fmt.Println("assetAmount", assetAmount)
-
-	errBuy := uc.walletUseCase.VerifyIfInvestorCanOperate(1, valueOperation)
-	
-	datasToInsert.AssetValue = valueOperation
-
-	if errBuy != nil {
-		return http.StatusNotAcceptable, "Saldo insuficiente"
+	if err := uc.executeOperation(assetOperation, value); err != nil {
+		return http.StatusInternalServerError, err.Error()
 	}
 
-	idOperation,err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
-
-	if err != nil {
-		return http.StatusInternalServerError, "Ocorreu algum erro quando tentamos concluir a operação, tente novamente"
+	if err := uc.updateWallet(assetOperation, buildDatasToInsert(assetOperation, value, 1).AssetAmount); err != nil {
+		return http.StatusInternalServerError, err.Error()
 	}
 
-	errWallet := uc.walletUseCase.InsertValueBalance(1, -valueOperation,idOperation)
-	if errWallet != nil {
-		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o saldo do usuário, tente novamente"
-	}
+	return http.StatusOK, "operação realizada com sucesso"
+}
 
+func (uc *BuyAssetUseCase) updateWallet(assetOperation entities.AssetOperation, assetAmount float64) error {
 	idWallet, err := uc.walletUseCase.FindIdWallet(1)
 	if err != nil {
-		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar dados em carteira, tente novamente"
+		return errors.New("erro ao buscar carteira")
 	}
 
-	assetWallet, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode,idWallet)
-	
+	assetWallet, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode, idWallet)
 	if err != nil {
-		if err.Error() == "o ativo foi comprado pela primeira vez" {
-			errInsert := uc.assetWalletUseCase.InsertAssetIntoWallet(entities.WalletAsset{AssetName: assetOperation.AssetCode, AssetType: assetOperation.AssetType, AssetQuantity: assetAmount, IdWallet: idWallet})
-			if errInsert != nil {
-				return http.StatusInternalServerError, "Ocorreu um erro ao inserir o ativo na carteira, tente novamente"
+		if err.Error() == "ativo não existe na carteira" {
+			walletAsset := entities.WalletAsset{
+				AssetName:     assetOperation.AssetCode,
+				AssetType:     assetOperation.AssetType,
+				AssetQuantity: assetAmount,
+				IdWallet:      idWallet,
 			}
-		} else {
-			return http.StatusInternalServerError, "Ocorreu um erro ao buscar o ativo na carteira, tente novamente"
+			if err := uc.assetWalletUseCase.InsertAssetIntoWallet(walletAsset); err != nil {
+				return errors.New("erro ao inserir ativo")
+			}
+			return nil
 		}
-	}else{ 
-
-		assetWallet.AssetQuantity += assetAmount
-		errUpdate := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, idWallet)
-		if errUpdate != nil {
-			return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o ativo na carteira, tente novamente"
-
-		}
+		return errors.New("erro ao buscar ativo")
 	}
 
-	fmt.Println("idWallet", idWallet)
+	assetWallet.AssetQuantity += assetAmount
+	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, idWallet); err != nil {
+		return errors.New("erro ao atualizar ativo")
+	}
 
-
-	return 200,"Operação realizada com sucesso"
+	return nil
 }
+
+
+func (uc *BuyAssetUseCase) executeOperation(assetOperation entities.AssetOperation, value float64) error {
+	
+	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
+	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
+
+	if err := uc.walletUseCase.VerifyIfInvestorCanOperate(1, valueOperation); err != nil {
+		return errors.New("saldo insuficiente")
+	}
+
+	idOperation, err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
+	if err != nil {
+		return errors.New("erro ao concluir operação")
+	}
+
+	if err := uc.walletUseCase.InsertValueBalance(1, -valueOperation, idOperation); err != nil {
+		return errors.New("erro ao atualizar saldo")
+	}
+	return nil
+}
+
+
+func (uc *BuyAssetUseCase) getAssetValue(assetOperation entities.AssetOperation) (float64, error) {
+	if assetOperation.AssetType == "SHARE" {
+		if !isActionTradable(time.Now()) {
+			return 0, errors.New("mercado fechado")
+		}
+		if err := uc.isAssetValid(assetOperation.AssetCode); err != nil {
+			return 0, errors.New("ação inválida")
+		}
+		return uc.getValueFromShare(assetOperation.AssetCode)
+	}
+
+	response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
+	if err != nil {
+		return 0, errors.New("erro ao buscar ativo")
+	}
+
+	if assetOperation.AssetType == "COIN" {
+		return getValueFromCoin(response, assetOperation.AssetCode)
+	} else if assetOperation.AssetType == "CRYPTO" {
+		return getValueFromCrypto(response)
+	}
+
+	return 0, errors.New("tipo de ativo inválido")
+}
+
+func (uc *BuyAssetUseCase) validateBuyAssetInput(assetOperation entities.AssetOperation) error {
+	if err := ValidateFields(assetOperation); err != nil {
+		return err
+	}
+	if assetOperation.OperationType != "BUY" {
+		return errors.New("operação inválida. Somente operações de compra são permitidas")
+	}
+	return nil
+}
+
 
 func (uc *BuyAssetUseCase) getValueFromShare(code string) (float64, error) {
 	share, err := uc.repo.FindShareById(code)

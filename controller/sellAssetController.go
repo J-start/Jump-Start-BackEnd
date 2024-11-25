@@ -4,21 +4,21 @@ import (
 	"encoding/json"
 
 	"jumpStart-backEnd/entities"
-	"jumpStart-backEnd/useCase/buy"
+	"jumpStart-backEnd/useCase/sell"
 	"net/http"
 	"jumpStart-backEnd/handleError"
 	//"strconv"
 )
 
-type BuyAssetController struct {
-	useCase *buy.BuyAssetUseCase
+type SellAssetController struct {
+	useCase *sell.SellAssetUseCase
 }
 
-func NewBuyAssetController(useCase *buy.BuyAssetUseCase) *BuyAssetController {
-	return &BuyAssetController{useCase: useCase}
+func NewSellAssetController(useCase *sell.SellAssetUseCase) *SellAssetController {
+	return &SellAssetController{useCase: useCase}
 }
 
-func (bac *BuyAssetController) BuyAsset(w http.ResponseWriter, r *http.Request) {
+func (bac *SellAssetController) SellAsset(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	if r.Method == "OPTIONS" {
@@ -41,8 +41,8 @@ func (bac *BuyAssetController) BuyAsset(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	code,message := bac.useCase.BuyAsset(asset)
-	handleError.WriteHTTPStatus(w, code, message)
-		
+		code,message := bac.useCase.SellAsset(asset)
+		handleError.WriteHTTPStatus(w, code, message)
+	
 }
 

@@ -26,7 +26,7 @@ func (war *WalletAssetRepository) FindAssetWallet(assetName string, idWallet int
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return entities.WalletAsset{}, errors.New("o ativo foi comprado pela primeira vez")
+			return entities.WalletAsset{}, errors.New("ativo não existe na carteira")
 		} 
 		return entities.WalletAsset{}, err
 	}
@@ -69,7 +69,10 @@ func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWa
 		return err
 	}
 
-	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWallet = ?`
+	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWalletAsset = ?`
+	fmt.Println(query)
+	fmt.Println(newQuantity)
+	fmt.Println(idWallet)
 	stmt, err := tx.Prepare(query)
 	if err != nil {
 		tx.Rollback()
@@ -92,8 +95,20 @@ func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWa
 	return nil
 }
 
+// func (war *WalletAssetRepository) UpdateAssetIntoWalletWithTx(tx *sql.Tx, newQuantity float64, idWallet int) error {
+// 	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWallet = ?`
+// 	_, err := tx.Exec(query, newQuantity, idWallet)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+
 func (war *WalletAssetRepository) DeleteAssetWallet(idWallet int)  error {
-	query := fmt.Sprintf(`DELETE FROM tb_walletAsset WHERE idWallet = %d `, idWallet)
+	query := fmt.Sprintf(`DELETE FROM tb_walletAsset WHERE idWalletAsset = %d `, idWallet)
+	fmt.Println(query)
 	_, err := war.db.Exec(query)
 
 	if err != nil {

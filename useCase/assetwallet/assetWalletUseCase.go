@@ -36,3 +36,10 @@ func (uc *AssetWalletUseCase) UpdateAssetIntoWallet(newQuantity float64, idWalle
 	}
 	return nil
 }
+ func (uc *AssetWalletUseCase) DeleteAssetWallet(idAsset int) error {
+	err := uc.repo.DeleteAssetWallet(idAsset)
+	if err != nil {
+		return err
+	}
+	return nil
+}
