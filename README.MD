@@ -20,7 +20,7 @@
 ``` shell
         docker compose up --build -d 
 ```
-- Se tudo ocorrer com sucesso basta acessar `http://localhost:8080` que a aplicação irá estar disponível para acesso aos endpoints
+- Se tudo ocorrer com sucesso, basta acessar `http://localhost:8080` que a aplicação irá estar disponível para acesso aos endpoints
 
 
 
