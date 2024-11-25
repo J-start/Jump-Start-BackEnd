@@ -7,7 +7,7 @@ import (
 )
 
 type WalletUseCase struct {
-	repo 				*repository.WalletRepository
+	repo 				  *repository.WalletRepository
 	operationAssetUseCase *operation.OperationAssetUseCase
 }
 
@@ -67,5 +67,13 @@ func (uc *WalletUseCase) VerifyIfInvestorCanOperate(id int, value float64) error
 	}
 
 	return nil
+}
+
+func (uc *WalletUseCase) FindIdWallet(id int) (int,error) {
+	wallet,err := uc.repo.FindIdWallet(id)
+	if err != nil {
+		return 0,err
+	}
+	return wallet,nil
 }
 

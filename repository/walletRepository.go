@@ -141,3 +141,21 @@ func (wr *WalletRepository) deleteOpreation(idOperation int) error {
 	return nil
 
 }
+
+func (wr *WalletRepository) FindIdWallet(idInvestor int) (int, error) {
+	var idWallet int
+
+	query := fmt.Sprintf(`SELECT idWallet FROM tb_wallet WHERE idInvestor = %d`, idInvestor)
+
+	err := wr.db.QueryRow(query).Scan(&idWallet)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errors.New("nenhum dado encontrado")
+		} else {
+			return 0, errors.New("erro ao executar a consulta")
+		}
+	}
+
+	return idWallet, nil
+}

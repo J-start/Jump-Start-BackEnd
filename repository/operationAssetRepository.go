@@ -33,7 +33,7 @@ func (oar *OperationAssetRepository) InsertOperationAsset(datas entities.AssetIn
 	defer stmt.Close()
 
 	
-	result, err := stmt.Exec(query,datas.AssetName, datas.AssetType,datas.AssetCode, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
+	result, err := stmt.Exec(datas.AssetName, datas.AssetType,datas.AssetCode, datas.AssetAmount, datas.AssetValue, datas.OperationType, datas.OperationDate, datas.IdInvestor, datas.IsProcessedAlready)
 	if err != nil {
 		tx.Rollback() 
 		return -1,err

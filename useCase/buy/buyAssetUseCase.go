@@ -2,9 +2,11 @@ package buy
 
 import (
 	"errors"
+	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase"
+	"jumpStart-backEnd/useCase/assetwallet"
 	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/wallet"
 	"net/http"
@@ -17,10 +19,11 @@ type BuyAssetUseCase struct {
 	shareUseCase             *usecase.ShareUseCase
 	walletUseCase            *wallet.WalletUseCase
 	operationAssetUseCase    *operation.OperationAssetUseCase
+	assetWalletUseCase       *assetwallet.AssetWalletUseCase
 }
 
-func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase) *BuyAssetUseCase {
-	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetUseCase: operationAssetUseCase}
+func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase,assetWalletUseCase *assetwallet.AssetWalletUseCase) *BuyAssetUseCase {
+	return &BuyAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetUseCase: operationAssetUseCase,assetWalletUseCase: assetWalletUseCase}
 }
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
@@ -70,7 +73,10 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 	}
 	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
+	assetAmount := datasToInsert.AssetAmount
 	
+	fmt.Println("assetAmount", assetAmount)
+
 	errBuy := uc.walletUseCase.VerifyIfInvestorCanOperate(1, valueOperation)
 	
 	datasToInsert.AssetValue = valueOperation
@@ -89,6 +95,35 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 	if errWallet != nil {
 		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o saldo do usuário, tente novamente"
 	}
+
+	idWallet, err := uc.walletUseCase.FindIdWallet(1)
+	if err != nil {
+		return http.StatusInternalServerError, "Ocorreu um erro ao atualizar dados em carteira, tente novamente"
+	}
+
+	assetWallet, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode,idWallet)
+	
+	if err != nil {
+		if err.Error() == "o ativo foi comprado pela primeira vez" {
+			errInsert := uc.assetWalletUseCase.InsertAssetIntoWallet(entities.WalletAsset{AssetName: assetOperation.AssetCode, AssetType: assetOperation.AssetType, AssetQuantity: assetAmount, IdWallet: idWallet})
+			if errInsert != nil {
+				return http.StatusInternalServerError, "Ocorreu um erro ao inserir o ativo na carteira, tente novamente"
+			}
+		} else {
+			return http.StatusInternalServerError, "Ocorreu um erro ao buscar o ativo na carteira, tente novamente"
+		}
+	}else{ 
+
+		assetWallet.AssetQuantity += assetAmount
+		errUpdate := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, idWallet)
+		if errUpdate != nil {
+			return http.StatusInternalServerError, "Ocorreu um erro ao atualizar o ativo na carteira, tente novamente"
+
+		}
+	}
+
+	fmt.Println("idWallet", idWallet)
+
 
 	return 200,"Operação realizada com sucesso"
 }
