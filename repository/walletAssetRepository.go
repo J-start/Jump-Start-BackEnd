@@ -34,58 +34,36 @@ func (war *WalletAssetRepository) FindAssetWallet(assetName string, idWallet int
 	return walletAsset, nil
 }
 
-func (war *WalletAssetRepository) InsertAssetIntoWallet(walletAsset entities.WalletAsset) error {
-	tx, err := war.db.Begin()
-	if err != nil {
-		return err
-	}
+func (war *WalletAssetRepository) InsertAssetIntoWallet(walletAsset entities.WalletAsset,repositoryService *sql.Tx) error {
+	tx := repositoryService
 
 	query := `INSERT INTO tb_walletAsset(assetName,assetType,assetQuantity,idWallet) VALUES (?,?,?,?)`
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(walletAsset.AssetName, walletAsset.AssetType, walletAsset.AssetQuantity, walletAsset.IdWallet)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
 	return nil
 }
 
-func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWallet int) error {
-	tx, err := war.db.Begin()
-	if err != nil {
-		return err
-	}
+func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWallet int,repositoryService *sql.Tx) error {
+	tx := repositoryService
 
 	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWalletAsset = ?`
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(newQuantity, idWallet)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		tx.Rollback()
 		return err
 	}
 

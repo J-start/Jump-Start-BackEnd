@@ -34,51 +34,31 @@ func (wr *WalletRepository) FindBalanceInvestor(id int) (float64, error) {
 	return balance, nil
 }
 
-func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64, idOperation int64) error {
-	tx, err := wr.db.Begin()
-	if err != nil {
-		return err
-	}
+func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64, idOperation int64,repositoryService *sql.Tx) error {
+	tx := repositoryService
 
 	query := `UPDATE tb_wallet SET balance = ? WHERE idInvestor = ?`
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(value, id)
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
 	query = `UPDATE tb_operationAsset SET isProcessedAlready = 1 WHERE idAsset = ?`
 	stmt, err = tx.Prepare(query)
 	if err != nil {
-		tx.Rollback()
-		errDelete := wr.deleteOpreation(int(idOperation))
-		if errDelete != nil {
-			return errDelete
-		}
 		return err
 	}
 	_, err = stmt.Exec(idOperation)
 	if err != nil {
-		tx.Rollback()
-		errDelete := wr.deleteOpreation(int(idOperation))
-		if errDelete != nil {
-			return errDelete
-		}
 		return err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
 
 	return nil
 }
@@ -147,17 +127,6 @@ func (wr *WalletRepository) CreateBalanceUser(id int) error {
 	return nil
 }
 
-func (wr *WalletRepository) deleteOpreation(idOperation int) error {
-	query := fmt.Sprintf(`DELETE FROM tb_operationAsset WHERE idAsset = %d `, idOperation)
-	_, err := wr.db.Exec(query)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
 
 func (wr *WalletRepository) FindIdWallet(idInvestor int) (int, error) {
 	var idWallet int

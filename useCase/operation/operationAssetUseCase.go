@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"database/sql"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 )
@@ -13,8 +14,8 @@ func NewOperationAssetUseCase(repo *repository.OperationAssetRepository) *Operat
 	return &OperationAssetUseCase{repo: repo}
 }
 
-func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsertDataBase) (int64, error) {
-	idOperation,err := uc.repo.InsertOperationAsset(datas)
+func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsertDataBase,repositoryService *sql.Tx) (int64, error) {
+	idOperation,err := uc.repo.InsertOperationAsset(datas,repositoryService)
 	if err != nil {
 		return -1,err
 	}

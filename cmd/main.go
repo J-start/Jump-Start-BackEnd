@@ -14,6 +14,7 @@ import (
 	"jumpStart-backEnd/useCase"
 	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/wallet"
+	"jumpStart-backEnd/serviceRepository"
 )
 
 func main() {
@@ -41,13 +42,14 @@ func main() {
 	walletRepository := repository.NewWalletRepository(db)
 	operationAssetRepository := repository.NewOperationAssetRepository(db)
 	assetWalletRepository := repository.NewWalletAssetRepository(db)
+	serviceRepository := servicerepository.NewWServiceRepository(db)
 
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
-	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase)
-	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase)
+	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
+	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
 	sellAssetController := controller.NewSellAssetController(NewSellAssetsUseCase)

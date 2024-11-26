@@ -1,10 +1,12 @@
 package sell
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/serviceRepository"
 	"jumpStart-backEnd/useCase"
 	"jumpStart-backEnd/useCase/assetwallet"
 	"jumpStart-backEnd/useCase/operation"
@@ -22,13 +24,19 @@ type SellAssetUseCase struct {
 	walletUseCase         *wallet.WalletUseCase
 	operationAssetUseCase *operation.OperationAssetUseCase
 	assetWalletUseCase    *assetwallet.AssetWalletUseCase
+	repositoryService 	  *servicerepository.ServiceRepository
 }
 
-func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase, assetWalletUseCase *assetwallet.AssetWalletUseCase) *SellAssetUseCase {
-	return &SellAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetUseCase: operationAssetUseCase, assetWalletUseCase: assetWalletUseCase}
+func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase, assetWalletUseCase *assetwallet.AssetWalletUseCase, repositoryService  *servicerepository.ServiceRepository ) *SellAssetUseCase {
+	return &SellAssetUseCase{repo: repo, shareUseCase: shareUseCase, walletUseCase: walletUseCase, operationAssetUseCase: operationAssetUseCase, assetWalletUseCase: assetWalletUseCase, repositoryService: repositoryService}
 }
 
 func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (int, string) {
+	repositoryService,err := uc.repositoryService.StartTransaction()
+
+	if err != nil {
+		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
+	}
 
 	if err := uc.validateSellAssetInput(assetOperation); err != nil {
 		return http.StatusNotAcceptable,err.Error()
@@ -42,23 +50,31 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 		return http.StatusNotAcceptable, err.Error()
 	}
 
-	idOperation, err := uc.ExecuteOperationRegisterAsset(assetOperation,valueAsset)
+	idOperation, err := uc.ExecuteOperationRegisterAsset(assetOperation,valueAsset,repositoryService)
 	if err != nil {
+		repositoryService.Rollback()
 		return http.StatusInternalServerError,err.Error()
 	}
 
 	valueAsset *= assetOperation.AssetAmount
 
-	err = uc.UpdateWallet(assetOperation,valueAsset,idOperation)
+	err = uc.UpdateWallet(assetOperation,valueAsset,idOperation,repositoryService)
 
 	if err != nil {
+		repositoryService.Rollback()
 		return http.StatusInternalServerError,err.Error()
+	}
+
+	errService := repositoryService.Commit()
+	if errService != nil {
+		repositoryService.Rollback()
+		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
 	}
 
 	return 200,"Venda realizada com sucesso"
 }
 
-func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation, assetAmount float64) error {
+func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation, assetAmount float64,repositoryService *sql.Tx) error {
 	idWallet, err := uc.walletUseCase.FindIdWallet(1)
 	if err != nil {
 		return errors.New("erro ao buscar carteira")
@@ -72,7 +88,7 @@ func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation,
 				AssetQuantity: assetAmount,
 				IdWallet:      idWallet,
 			}
-			if err := uc.assetWalletUseCase.InsertAssetIntoWallet(walletAsset); err != nil {
+			if err := uc.assetWalletUseCase.InsertAssetIntoWallet(walletAsset,repositoryService); err != nil {
 				return errors.New("erro ao inserir ativo")
 			}
 			return nil
@@ -87,7 +103,7 @@ func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation,
 		}	
 		return nil
 	}
-	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, assetWallet.Id); err != nil {
+	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, assetWallet.Id,repositoryService); err != nil {
 		return errors.New("erro ao atualizar ativo")
 	}
 
@@ -112,6 +128,7 @@ func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.Asse
 
 func (uc *SellAssetUseCase) getAssetValue(assetOperation entities.AssetOperation) (float64, error) {
 	if assetOperation.AssetType == "SHARE" {
+		fmt.Println(utils.IsActionTradable(time.Now()))
 		if !utils.IsActionTradable(time.Now()) {
 			return 0, errors.New("mercado fechado")
 		}
@@ -169,10 +186,10 @@ func (uc *SellAssetUseCase) validateSellAssetInput(assetOperation entities.Asset
 	return nil
 }
 
-func (uc *SellAssetUseCase) ExecuteOperationRegisterAsset(assetOperation entities.AssetOperation,valueAsset float64) (int64, error) {
+func (uc *SellAssetUseCase) ExecuteOperationRegisterAsset(assetOperation entities.AssetOperation,valueAsset float64,repositoryService *sql.Tx) (int64, error) {
 	datasToInsert := utils.BuildDatasToInsert(assetOperation, valueAsset, 1)
 
-	idOperation, err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
+	idOperation, err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert,repositoryService)
 
 	if err != nil {
 		return -1,errors.New("erro ao concluir operação, tente novamente")
@@ -180,12 +197,12 @@ func (uc *SellAssetUseCase) ExecuteOperationRegisterAsset(assetOperation entitie
 	return idOperation,nil
 }
 
-func (uc *SellAssetUseCase) UpdateWallet(assetOperation entities.AssetOperation,valueAsset float64,idOperation int64) error {
-	if err := uc.walletUseCase.InsertValueBalance(1, valueAsset, idOperation); err != nil {
+func (uc *SellAssetUseCase) UpdateWallet(assetOperation entities.AssetOperation,valueAsset float64,idOperation int64,repositoryService *sql.Tx) error {
+	if err := uc.walletUseCase.InsertValueBalance(1, valueAsset, idOperation,repositoryService); err != nil {
 		return errors.New("erro ao atualizar saldo, tente realizar a operação novamente")
 	}
 
-	if err := uc.updateWallet(assetOperation, assetOperation.AssetAmount); err != nil {
+	if err := uc.updateWallet(assetOperation, assetOperation.AssetAmount,repositoryService); err != nil {
 		return errors.New("erro ao atualizar ativo na carteira")
 	}
 	return nil

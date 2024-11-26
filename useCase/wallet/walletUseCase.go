@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"database/sql"
 	"errors"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/useCase/operation"
@@ -15,14 +16,14 @@ func NewWalletUseCase(repo *repository.WalletRepository,operationAssetUseCase *o
 	return &WalletUseCase{repo: repo,operationAssetUseCase : operationAssetUseCase}
 }
 
-func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64,idOperation int64) error {
+func (uc *WalletUseCase) InsertValueBalance(idInvestor int,value float64,idOperation int64,repositoryService *sql.Tx) error {
 	balance,err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return errors.New("erro ao verificar saldo do usuário")
 	}
 	balance += value
 
-	errInsert := uc.repo.UpdateBalanceInvestor(idInvestor, balance,idOperation)
+	errInsert := uc.repo.UpdateBalanceInvestor(idInvestor, balance,idOperation,repositoryService)
 
 	if errInsert != nil {
 		return errors.New("erro ao atualizar o saldo")
@@ -69,7 +70,7 @@ func (uc *WalletUseCase) VerifyIfInvestorCanOperate(id int, value float64) error
 	return nil
 }
 
-func (uc *WalletUseCase) FindIdWallet(id int) (int,error) {
+func (uc *WalletUseCase) FindIdWallet(id int,) (int,error) {
 	wallet,err := uc.repo.FindIdWallet(id)
 	if err != nil {
 		return 0,err

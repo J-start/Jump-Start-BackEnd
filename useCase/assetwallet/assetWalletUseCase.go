@@ -1,6 +1,7 @@
 package assetwallet
 
 import (
+	"database/sql"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 )
@@ -21,16 +22,16 @@ func (uc *AssetWalletUseCase) FindAssetWallet(assetName string,idWallet int) (en
 	return walletAsset, nil
 }
 
-func (uc *AssetWalletUseCase) InsertAssetIntoWallet(walletAsset entities.WalletAsset) error {
-	err := uc.repo.InsertAssetIntoWallet(walletAsset)
+func (uc *AssetWalletUseCase) InsertAssetIntoWallet(walletAsset entities.WalletAsset,repositoryService *sql.Tx) error {
+	err := uc.repo.InsertAssetIntoWallet(walletAsset,repositoryService)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (uc *AssetWalletUseCase) UpdateAssetIntoWallet(newQuantity float64, idWallet int) error {
-	err := uc.repo.UpdateAssetIntoWallet(newQuantity, idWallet)
+func (uc *AssetWalletUseCase) UpdateAssetIntoWallet(newQuantity float64, idWallet int,repositoryService *sql.Tx) error {
+	err := uc.repo.UpdateAssetIntoWallet(newQuantity, idWallet,repositoryService)
 	if err != nil {
 		return err
 	}

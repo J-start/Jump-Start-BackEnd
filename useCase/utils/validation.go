@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"jumpStart-backEnd/entities"
-	
 )
 
 func IsActionTradable(date time.Time) bool {
+
 	OPEN := 10
 	CLOSE := 17
 
@@ -19,12 +19,15 @@ func IsActionTradable(date time.Time) bool {
 	}
 
 	brazilTime := date.In(location)
-
 	if brazilTime.Weekday() == time.Saturday || brazilTime.Weekday() == time.Sunday {
 		return false
 	}
 
 	if brazilTime.Hour() < OPEN || brazilTime.Hour() > CLOSE {
+		return false
+	}
+
+	if brazilTime.Hour() == CLOSE && brazilTime.Minute() > 0 {
 		return false
 	}
 
