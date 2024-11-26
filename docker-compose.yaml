@@ -1,6 +1,6 @@
 services:
   app:
-    image: maacosv/jump-start-app:latest
+    image: maacosv/project:latest
     ports:
       - "8080:8080"
     depends_on:

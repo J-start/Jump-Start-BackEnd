@@ -13,7 +13,7 @@ var db *sql.DB
 
 func init() {
 
-	dsn := "root:password@tcp(127.0.0.1:3306)/jumpStart?parseTime=true"
+	dsn := "root:password@tcp(mysql:3306)/jumpStart?parseTime=true"
 	var err error
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
