@@ -29,9 +29,12 @@ func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecas
 }
 
 func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (int, string) {
-	_, err := uc.VerifyIfInvestorCanSell(assetOperation)
-	if err != nil {
-		return http.StatusNotAcceptable, err.Error()
+
+	if err := uc.validateSellAssetInput(assetOperation); err != nil {
+		return http.StatusNotAcceptable,err.Error()
+	}
+	if err := uc.VerifyIfInvestorCanSell(assetOperation); err != nil {
+		return http.StatusNotAcceptable,err.Error()
 	}
 
 	valueAsset, err := uc.getAssetValue(assetOperation)
@@ -39,25 +42,18 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 		return http.StatusNotAcceptable, err.Error()
 	}
 
-	datasToInsert := utils.BuildDatasToInsert(assetOperation, valueAsset, 1)
-
-	idOperation, err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
-
+	idOperation, err := uc.ExecuteOperationRegisterAsset(assetOperation,valueAsset)
 	if err != nil {
-		return http.StatusInternalServerError,errors.New("erro ao concluir operação, tente novamente").Error()
+		return http.StatusInternalServerError,err.Error()
 	}
+
 	valueAsset *= assetOperation.AssetAmount
 
-	
-	if err := uc.walletUseCase.InsertValueBalance(1, valueAsset, idOperation); err != nil {
-		return http.StatusInternalServerError,errors.New("erro ao atualizar saldo, tente realizar a operação novamente").Error()
+	err = uc.UpdateWallet(assetOperation,valueAsset,idOperation)
+
+	if err != nil {
+		return http.StatusInternalServerError,err.Error()
 	}
-
-	if err := uc.updateWallet(assetOperation, assetOperation.AssetAmount); err != nil {
-		return http.StatusInternalServerError,errors.New("erro ao atualizar ativo na carteira").Error()
-	}
-
-
 
 	return 200,"Venda realizada com sucesso"
 }
@@ -86,8 +82,6 @@ func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation,
 	assetWallet.AssetQuantity -= assetAmount
 
 	if assetWallet.AssetQuantity == 0 {
-		fmt.Println("precisa deletar")
-		fmt.Println(assetWallet.Id)
 		if err := uc.assetWalletUseCase.DeleteAssetWallet(assetWallet.Id); err != nil {
 			return errors.New("erro ao deletar ativo")
 		}	
@@ -100,20 +94,20 @@ func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation,
 	return nil
 }
 
-func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.AssetOperation) (entities.WalletAsset, error) {
+func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.AssetOperation) error {
 
 	walletAsset, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode, 1)
 	if err != nil {
 		if err.Error() == "ativo não existe na carteira" {
-			return entities.WalletAsset{}, fmt.Errorf("o ativo %s não existe em carteira", assetOperation.AssetCode)
+			return fmt.Errorf("o ativo %s não existe em carteira", assetOperation.AssetCode)
 		}
-		return entities.WalletAsset{}, err
+		return  err
 	}
 	if assetOperation.AssetAmount > walletAsset.AssetQuantity {
-		return entities.WalletAsset{}, fmt.Errorf("quantidade de ativos em carteira insuficiente")
+		return  fmt.Errorf("quantidade de ativos em carteira insuficiente")
 	}
 	
-	return walletAsset, nil   
+	return nil   
 }
 
 func (uc *SellAssetUseCase) getAssetValue(assetOperation entities.AssetOperation) (float64, error) {
@@ -162,5 +156,37 @@ func (uc *SellAssetUseCase) isAssetValid(code string) error {
 		return errors.New("nome de ação inválida")
 	}
 
+	return nil
+}
+
+func (uc *SellAssetUseCase) validateSellAssetInput(assetOperation entities.AssetOperation) error {
+	if err := utils.ValidateFields(assetOperation); err != nil {
+		return err
+	}
+	if assetOperation.OperationType != "SELL" {
+		return errors.New("operação inválida. Somente operações de compra são permitidas")
+	}
+	return nil
+}
+
+func (uc *SellAssetUseCase) ExecuteOperationRegisterAsset(assetOperation entities.AssetOperation,valueAsset float64) (int64, error) {
+	datasToInsert := utils.BuildDatasToInsert(assetOperation, valueAsset, 1)
+
+	idOperation, err := uc.operationAssetUseCase.InsertOperationAsset(datasToInsert)
+
+	if err != nil {
+		return -1,errors.New("erro ao concluir operação, tente novamente")
+	}
+	return idOperation,nil
+}
+
+func (uc *SellAssetUseCase) UpdateWallet(assetOperation entities.AssetOperation,valueAsset float64,idOperation int64) error {
+	if err := uc.walletUseCase.InsertValueBalance(1, valueAsset, idOperation); err != nil {
+		return errors.New("erro ao atualizar saldo, tente realizar a operação novamente")
+	}
+
+	if err := uc.updateWallet(assetOperation, assetOperation.AssetAmount); err != nil {
+		return errors.New("erro ao atualizar ativo na carteira")
+	}
 	return nil
 }

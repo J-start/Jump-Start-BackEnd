@@ -8,6 +8,8 @@ import (
 	"jumpStart-backEnd/useCase/assetwallet"
 	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/wallet"
+	"jumpStart-backEnd/useCase/utils/requests"
+	"jumpStart-backEnd/useCase/utils"
 	"net/http"
 	"strings"
 	"time"
@@ -40,7 +42,7 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 		return http.StatusInternalServerError, err.Error()
 	}
 
-	if err := uc.updateWallet(assetOperation, buildDatasToInsert(assetOperation, value, 1).AssetAmount); err != nil {
+	if err := uc.updateWallet(assetOperation, utils.BuildDatasToInsert(assetOperation, value, 1).AssetAmount); err != nil {
 		return http.StatusInternalServerError, err.Error()
 	}
 
@@ -71,7 +73,7 @@ func (uc *BuyAssetUseCase) updateWallet(assetOperation entities.AssetOperation, 
 	}
 
 	assetWallet.AssetQuantity += assetAmount
-	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, idWallet); err != nil {
+	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, assetWallet.Id); err != nil {
 		return errors.New("erro ao atualizar ativo")
 	}
 
@@ -81,7 +83,7 @@ func (uc *BuyAssetUseCase) updateWallet(assetOperation entities.AssetOperation, 
 
 func (uc *BuyAssetUseCase) executeOperation(assetOperation entities.AssetOperation, value float64) error {
 	
-	datasToInsert := buildDatasToInsert(assetOperation, value, 1)
+	datasToInsert := utils.BuildDatasToInsert(assetOperation, value, 1)
 	valueOperation := datasToInsert.AssetAmount * datasToInsert.AssetValue
 
 	if err := uc.walletUseCase.VerifyIfInvestorCanOperate(1, valueOperation); err != nil {
@@ -102,7 +104,7 @@ func (uc *BuyAssetUseCase) executeOperation(assetOperation entities.AssetOperati
 
 func (uc *BuyAssetUseCase) getAssetValue(assetOperation entities.AssetOperation) (float64, error) {
 	if assetOperation.AssetType == "SHARE" {
-		if !isActionTradable(time.Now()) {
+		if !utils.IsActionTradable(time.Now()) {
 			return 0, errors.New("mercado fechado")
 		}
 		if err := uc.isAssetValid(assetOperation.AssetCode); err != nil {
@@ -111,22 +113,22 @@ func (uc *BuyAssetUseCase) getAssetValue(assetOperation entities.AssetOperation)
 		return uc.getValueFromShare(assetOperation.AssetCode)
 	}
 
-	response, err := MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
+	response, err := requests.MakeRequestAsset(assetOperation.AssetType, assetOperation.AssetCode)
 	if err != nil {
 		return 0, errors.New("erro ao buscar ativo")
 	}
 
 	if assetOperation.AssetType == "COIN" {
-		return getValueFromCoin(response, assetOperation.AssetCode)
+		return requests.GetValueFromCoin(response, assetOperation.AssetCode)
 	} else if assetOperation.AssetType == "CRYPTO" {
-		return getValueFromCrypto(response)
+		return requests.GetValueFromCrypto(response)
 	}
 
 	return 0, errors.New("tipo de ativo inválido")
 }
 
 func (uc *BuyAssetUseCase) validateBuyAssetInput(assetOperation entities.AssetOperation) error {
-	if err := ValidateFields(assetOperation); err != nil {
+	if err := utils.ValidateFields(assetOperation); err != nil {
 		return err
 	}
 	if assetOperation.OperationType != "BUY" {

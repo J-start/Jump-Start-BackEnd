@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"jumpStart-backEnd/entities"
 	"log"
 
@@ -31,6 +30,5 @@ func (repo *NewsRepository) FindAllNews() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(news)
 	}
 }

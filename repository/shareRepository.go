@@ -78,14 +78,13 @@ func (repo *ShareRepository) FindShareById(shareName string) (entities.Share, er
 	rows, err := repo.db.Query(query)
 
 	if err != nil {
-		fmt.Println(err)
+		return entities.Share{}, err
 	}
 
 	 defer rows.Close()
 
 	share, err = buildShare(rows)
 	if err != nil {
-		fmt.Println(err)
 		return entities.Share{}, err
 	}
 
@@ -112,14 +111,13 @@ func (repo *ShareRepository) ShareList(shareName string) ([]entities.Share, erro
 	rows, err := repo.db.Query(query)
 
 	if err != nil {
-		fmt.Println(err)
+		return []entities.Share{}, err
 	}
 
 	 defer rows.Close()
 
 	share, err = buildShare(rows)
 	if err != nil {
-		fmt.Println(err)
 		return []entities.Share{}, err
 	}
 
@@ -137,7 +135,6 @@ func buildShare(rows *sql.Rows) ([]entities.Share, error) {
 		var share entities.Share
 		err := rows.Scan(&share.Id, &share.NameShare, &dateShare, &share.OpenShare, &share.HighShare, &share.LowShare, &share.CloseShare, &share.VolumeShare)
 		if err != nil {
-			fmt.Println(err)
 			return nil, err
 		}
 		share.DateShare = dateShare.Format("2006-01-02")

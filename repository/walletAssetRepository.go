@@ -70,9 +70,6 @@ func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWa
 	}
 
 	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWalletAsset = ?`
-	fmt.Println(query)
-	fmt.Println(newQuantity)
-	fmt.Println(idWallet)
 	stmt, err := tx.Prepare(query)
 	if err != nil {
 		tx.Rollback()
@@ -108,7 +105,6 @@ func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWa
 
 func (war *WalletAssetRepository) DeleteAssetWallet(idWallet int)  error {
 	query := fmt.Sprintf(`DELETE FROM tb_walletAsset WHERE idWalletAsset = %d `, idWallet)
-	fmt.Println(query)
 	_, err := war.db.Exec(query)
 
 	if err != nil {
