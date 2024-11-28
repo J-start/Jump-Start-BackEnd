@@ -5,7 +5,8 @@ import (
 	"log"
 	"time"
 	"fmt"
-
+	"os"
+	"github.com/joho/godotenv"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -13,7 +14,19 @@ var db *sql.DB
 
 func init() {
 
-	dsn := "root:password@tcp(mysql:3306)/jumpStart?parseTime=true"
+	err2 := godotenv.Load()
+    if err2 != nil {
+		fmt.Println("Erro ao carregar o arquivo .env")
+    }
+
+	PASSWORD := os.Getenv("MYSQL_ROOT_PASSWORD")
+	DATABASE := os.Getenv("MYSQL_DATABASE")
+	USER := os.Getenv("MYSQL_USER")
+	HOST := os.Getenv("MYSQL_HOST")
+	PORT := os.Getenv("MYSQL_PORT")
+
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", USER, PASSWORD,HOST,PORT,DATABASE)
 	var err error
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
