@@ -6,10 +6,6 @@ docker-compose -f docker-compose.test.yaml up -d
 
 echo Aguardando o container subir...
 
-@echo off
-
-docker-compose -f docker-compose.test.yaml up -d
-
 for /f %%i in ('docker-compose ps -q mysql') do set CONTAINER_ID=%%i
 
 for /f "tokens=*" %%i in ('docker inspect -f "{{.Name}}" %CONTAINER_ID%') do set CONTAINER_NAME=%%i
