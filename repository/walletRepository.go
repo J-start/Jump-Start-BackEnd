@@ -63,22 +63,6 @@ func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64, idOpera
 	return nil
 }
 
-// func (wr *WalletRepository) UpdateBalanceInvestorWithTx(tx *sql.Tx, id int, value float64, idOperation int64) error {
-// 	query := `UPDATE tb_wallet SET balance = ? WHERE idInvestor = ?`
-// 	_, err := tx.Exec(query, value, id)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	query = `UPDATE tb_operationAsset SET isProcessedAlready = 1 WHERE idAsset = ?`
-// 	_, err = tx.Exec(query, idOperation)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 
 func (wr *WalletRepository) IsBalanceExists(id int) (float64, error) {
 	var balance float64

@@ -2,6 +2,7 @@ package operation
 
 import (
 	"database/sql"
+	"errors"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 )
@@ -20,6 +21,19 @@ func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsert
 		return -1,err
 	}
 	return idOperation,nil
+}
+
+func (uc *OperationAssetUseCase) FetchAssetHistoryByInvestor(idInvestor int,offset int) ([]entities.AssetOperationHistory,error) {
+	//TODO create logic to validate id investor
+	
+	if offset < 0 {
+		return []entities.AssetOperationHistory{},errors.New("offset deve ser maior que 0")
+	}
+	assetHistory,err := uc.repo.FetchAssetHistoryByInvestor(idInvestor,offset)
+	if err != nil {
+		return nil,err
+	}
+	return assetHistory,nil
 }
 
 

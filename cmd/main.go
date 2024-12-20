@@ -55,6 +55,7 @@ func main() {
 	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	
 	listAssetController := controller.NewListAssetController(listAssetUseCase)
+	operationAssetController := controller.NewOperationAssetController(operationAssetUseCase)
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
 	sellAssetController := controller.NewSellAssetController(NewSellAssetsUseCase)
 	shareController := controller.NewShareController(shareUsecase)
@@ -67,6 +68,7 @@ func main() {
 	http.HandleFunc("/sell/", sellAssetController.SellAsset)
 	http.HandleFunc("/details/asset/", listAssetController.ListAsset)
 	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
+	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

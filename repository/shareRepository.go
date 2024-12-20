@@ -106,8 +106,8 @@ func (repo *ShareRepository) ShareNameList() ([]entities.Share, error) {
 
 func (repo *ShareRepository) ShareList(shareName string) ([]entities.Share, error) {
 	var share []entities.Share
-    const LIMIT = 30
-	query := fmt.Sprintf(`SELECT * FROM tb_share AS t WHERE t.nameShare = '%s' AND t.id IN ( SELECT MAX(id) FROM tb_share WHERE nameShare = '%s' GROUP BY DateShare) ORDER BY  DateShare LIMIT %d`, shareName,shareName,LIMIT)
+    const LIMIT = 40
+	query := fmt.Sprintf(`SELECT * FROM tb_share WHERE nameShare = '%s' AND id IN (SELECT MIN(id) FROM tb_share WHERE nameShare = '%s' GROUP BY dateShare) ORDER BY DateShare LIMIT %d`, shareName,shareName,LIMIT)
 	rows, err := repo.db.Query(query)
 
 	if err != nil {

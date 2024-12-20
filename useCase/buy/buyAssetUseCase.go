@@ -91,6 +91,7 @@ func (uc *BuyAssetUseCase) updateWallet(assetOperation entities.AssetOperation, 
 	}
 
 	assetWallet.AssetQuantity += assetAmount
+	
 	if err := uc.assetWalletUseCase.UpdateAssetIntoWallet(assetWallet.AssetQuantity, assetWallet.Id,repositoryService); err != nil {
 		return errors.New("erro ao atualizar ativo")
 	}
