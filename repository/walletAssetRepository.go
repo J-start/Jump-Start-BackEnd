@@ -70,17 +70,6 @@ func (war *WalletAssetRepository) UpdateAssetIntoWallet(newQuantity float64,idWa
 	return nil
 }
 
-// func (war *WalletAssetRepository) UpdateAssetIntoWalletWithTx(tx *sql.Tx, newQuantity float64, idWallet int) error {
-// 	query := `UPDATE tb_walletAsset SET assetQuantity = ? WHERE idWallet = ?`
-// 	_, err := tx.Exec(query, newQuantity, idWallet)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-
 func (war *WalletAssetRepository) DeleteAssetWallet(idWallet int)  error {
 	query := fmt.Sprintf(`DELETE FROM tb_walletAsset WHERE idWalletAsset = %d `, idWallet)
 	_, err := war.db.Exec(query)
@@ -91,3 +80,5 @@ func (war *WalletAssetRepository) DeleteAssetWallet(idWallet int)  error {
 
 	return nil
 }
+
+

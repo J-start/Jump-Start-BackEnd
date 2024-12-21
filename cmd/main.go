@@ -11,6 +11,7 @@ import (
 	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/sell"
 	"jumpStart-backEnd/useCase/wallet"
+	"jumpStart-backEnd/useCase/listasset"
 	"log"
 	"net/http"
 
@@ -43,7 +44,9 @@ func main() {
 	operationAssetRepository := repository.NewOperationAssetRepository(db)
 	assetWalletRepository := repository.NewWalletAssetRepository(db)
 	serviceRepository := servicerepository.NewWServiceRepository(db)
+	listAssetRepository := repository.NewListAssetRepository(db)
 
+	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase)
@@ -51,9 +54,12 @@ func main() {
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	
+	listAssetController := controller.NewListAssetController(listAssetUseCase)
+	operationAssetController := controller.NewOperationAssetController(operationAssetUseCase)
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
 	sellAssetController := controller.NewSellAssetController(NewSellAssetsUseCase)
 	shareController := controller.NewShareController(shareUsecase)
+	walletController := controller.NewWalletController(walletUseCase)
 
 	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
 	http.HandleFunc("/datas/shares/offset", shareController.GetSharesSpecifyOffSet)
@@ -61,6 +67,11 @@ func main() {
 	http.HandleFunc("/datas/share/", shareController.GetShareList)
 	http.HandleFunc("/buy/", BuyAssetController.BuyAsset)
 	http.HandleFunc("/sell/", sellAssetController.SellAsset)
+	http.HandleFunc("/details/asset/", listAssetController.ListAsset)
+	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
+	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
+	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
+	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

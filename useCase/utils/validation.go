@@ -10,8 +10,8 @@ import (
 
 func IsActionTradable(date time.Time) bool {
 
-	OPEN := 10
-	CLOSE := 17
+	OPEN := 11
+	CLOSE := 18
 
 	location, err := time.LoadLocation("America/Sao_Paulo")
 	if err != nil {

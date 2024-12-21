@@ -5,6 +5,6 @@
 
 ## Diagrama do banco de dados de forma simplificada
 
-![Diagrama](image.png)
+![Diagrama](assets/image.png)
 
 ### Para a API em go foi utilizada a arquitetura REST

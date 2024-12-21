@@ -10,6 +10,20 @@ type AssetOperation struct {
 	CodeInvestor  string
 }
 
+type AssetOperationHistory struct {
+	AssetName      string
+	AssetType      string
+	AssetQuantity  float64
+	AssetValue     float64
+	OperationType  string
+	OperationDate  string
+}
+
+type BodyAssetOperation struct {
+	TokenUser      string
+	OffSet         int
+}
+
 type AssetInsertDataBase struct {
 	IdAsset            int
 	AssetName          string
