@@ -3,6 +3,7 @@ package wallet
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/serviceRepository"
@@ -181,6 +182,57 @@ func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (in
 
 	dateMysql := convertDateToMysql()
 	errInsert := uc.repo.InsertOperationWallet("WITHDRAW", operation.Value,dateMysql, ID_INVESTOR, repositoryService)
+	if errInsert != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao concluir operação, tente novamente"
+	}
+
+	errService := repositoryService.Commit()
+	if errService != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
+	}
+
+
+	return http.StatusOK, "operação realizada com sucesso"
+}
+
+func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int, string) {
+	// TODO CREATE LOGIC TO VALIDATE AND RECOVER ID INVESTOR
+	const ID_INVESTOR = 1
+	balance , err := uc.isInvestorValid(ID_INVESTOR)
+	if err != nil {
+		return http.StatusBadRequest, "dados do usuário inválidos"
+	}
+
+	balanceDay , errBalanceDay := uc.repo.FetchDayDeposits(ID_INVESTOR)
+	if errBalanceDay != nil {
+		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
+	}
+	fmt.Println("balanceDay ",balanceDay)
+	if  (balanceDay + operation.Value) > 1000 {
+		return http.StatusNotAcceptable, "limite diário de depósito atingido"
+	}
+
+	repositoryService,errRepository := uc.repositoryService.StartTransaction()
+
+	if errRepository != nil {
+		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
+	}
+
+	if operation.Value <= 0 {
+		return http.StatusNotAcceptable, "saldo insuficiente"
+	}
+	balance += operation.Value
+
+	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(ID_INVESTOR, balance,repositoryService)
+	if errUpdateBalance != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao atualizar saldo"
+	}
+
+	dateMysql := convertDateToMysql()
+	errInsert := uc.repo.InsertOperationWallet("DEPOSIT", operation.Value,dateMysql, ID_INVESTOR, repositoryService)
 	if errInsert != nil {
 		repositoryService.Rollback()
 		return http.StatusBadRequest, "erro ao concluir operação, tente novamente"

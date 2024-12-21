@@ -203,6 +203,25 @@ func (wr *WalletRepository) FetchDatasWalletOperation(idInvestor, offset int) ([
 
 }
 
+
+func (wr *WalletRepository) FetchDayDeposits(idInvestor int) (float64, error) {
+	query := `SELECT SUM(operationValue) FROM tb_walletOperation WHERE operationdate = DATE_FORMAT(NOW(),'%Y,%m,%d') AND operationType = 'DEPOSIT' AND idInvestor = ?`
+	var balanceDay float64
+	err := wr.db.QueryRow(query, idInvestor).Scan(&balanceDay)
+
+	if err != nil {
+
+		fmt.Println(err)
+		if err.Error() == `sql: Scan error on column index 0, name "SUM(operationValue)": converting NULL to float64 is unsupported` {
+			return 0, nil
+		}
+		return -1, errors.New("erro ao buscar saldo")
+	}
+
+	return balanceDay, nil
+}
+
+
 func (wr *WalletRepository) InsertOperationWallet(operationType string,operationValue float64,operationDate string,idInvestor int,repositoryService *sql.Tx) error {
 	tx := repositoryService
 
