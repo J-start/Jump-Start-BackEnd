@@ -9,4 +9,20 @@ type WalletAsset struct {
 	IdWallet int `json:"idWallet"`
 
 }
+
+type Asset struct {
+	AssetName string
+	AssetType string
+	AssetQuantity float64
+}
+
+type WalletDatas struct {
+	InvestorBalance float64 
+	Assets []Asset
+}
+
+type WalletRequest struct {
+	TokenInvestor string `json:"tokenInvestor"`
+}
+
 	

@@ -59,6 +59,7 @@ func main() {
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
 	sellAssetController := controller.NewSellAssetController(NewSellAssetsUseCase)
 	shareController := controller.NewShareController(shareUsecase)
+	walletController := controller.NewWalletController(walletUseCase)
 
 	http.HandleFunc("/datas/shares", shareController.GetTodaySharesJSON)
 	http.HandleFunc("/datas/shares/offset", shareController.GetSharesSpecifyOffSet)
@@ -69,6 +70,7 @@ func main() {
 	http.HandleFunc("/details/asset/", listAssetController.ListAsset)
 	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
 	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
+	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"jumpStart-backEnd/entities"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -128,4 +129,54 @@ func (wr *WalletRepository) FindIdWallet(idInvestor int) (int, error) {
 	}
 
 	return idWallet, nil
+}
+
+
+func (wr *WalletRepository) SearchDatasWallet(idInvestor int) ([]entities.Asset, error) {
+	query := fmt.Sprintf(`SELECT wa.assetName,wa.assetType,wa.assetQuantity FROM tb_walletAsset AS wa INNER JOIN tb_wallet AS w ON wa.idWallet = w.idWallet WHERE w.idInvestor = %d`, idInvestor)
+    rows, err := wr.db.Query(query)
+
+	if err != nil {
+		return []entities.Asset{}, errors.New("erro ao buscar ativos")
+	}
+
+	assets, err := buildAssets(rows)
+	if err != nil {
+		return []entities.Asset{}, errors.New("erro ao buscar ativos")
+	}
+	return assets, nil
+
+}
+
+func (wr *WalletRepository) SearchBalanceInvestor(idInvestor int) (float64, error) {
+	var balance float64
+	query := `SELECT balance FROM tb_wallet WHERE idInvestor = ?`
+	err := wr.db.QueryRow(query, idInvestor).Scan(&balance)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return -1, errors.New("saldo inexiste")
+		} 
+		return -1, errors.New("erro ao buscar saldo")
+	}
+
+	return balance, nil
+}
+
+func buildAssets(rows *sql.Rows) ([]entities.Asset, error) {
+	var assets []entities.Asset
+
+	for rows.Next() {
+		var asset entities.Asset
+		err := rows.Scan(&asset.AssetName, &asset.AssetType, &asset.AssetQuantity)
+		if err != nil {
+			return nil, err
+		}
+
+		assets = append(assets, asset)
+
+	}
+
+	return assets, nil
+
 }
