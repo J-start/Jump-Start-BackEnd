@@ -53,3 +53,39 @@ func (wc *WalletController) FetchDatasWallet(w http.ResponseWriter, r *http.Requ
 
 	
 }
+
+func (wc *WalletController) FetchOperationsWallet(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+
+	var datasOperation entities.BodyAssetOperation
+
+	err := json.NewDecoder(r.Body).Decode(&datasOperation)
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
+		return
+	}
+	operationsDatas,err := wc.useCase.FetchOperationsWallet(datasOperation.TokenUser,datasOperation.OffSet)
+
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(operationsDatas); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	
+}

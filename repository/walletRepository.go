@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -161,6 +162,46 @@ func (wr *WalletRepository) SearchBalanceInvestor(idInvestor int) (float64, erro
 	}
 
 	return balance, nil
+}
+
+func (wr *WalletRepository) FetchDatasWalletOperation(idInvestor, offset int) ([]entities.WalletOperation, error) {
+	offset *= 20
+	query := fmt.Sprintf(`SELECT operationType,operationValue,operationDate FROM tb_walletOperation WHERE idInvestor = %d LIMIT 20 OFFSET %d`, idInvestor,offset)
+    rows, err := wr.db.Query(query)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []entities.WalletOperation{}, errors.New("nenhum histórico encontrado")
+		} 
+		return []entities.WalletOperation{}, errors.New("erro ao buscar ativos")
+	}
+
+	operationsWallet, err := buildoperationWallet(rows)
+	if err != nil {
+		return []entities.WalletOperation{}, errors.New("erro ao buscar ativos")
+	}
+
+	return operationsWallet, nil
+
+}
+
+func buildoperationWallet(rows *sql.Rows) ([]entities.WalletOperation, error) {
+	var operationsWallet []entities.WalletOperation
+
+	for rows.Next() {
+		var operation entities.WalletOperation
+		var date time.Time
+		err := rows.Scan(&operation.OperationType, &operation.OperationValue, &date)
+		if err != nil {
+			return nil, err
+		}
+		operation.DperationDate = date.Format("2006-01-02")
+		operationsWallet = append(operationsWallet, operation)
+
+	}
+
+	return operationsWallet, nil
+
 }
 
 func buildAssets(rows *sql.Rows) ([]entities.Asset, error) {

@@ -71,6 +71,7 @@ func main() {
 	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
 	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
 	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
+	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

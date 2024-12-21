@@ -129,3 +129,20 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 	return WalletDatas, nil
 }
 
+func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string,offset int) ([]entities.WalletOperation,error) {
+
+	//TODO CREATE LOGIC TO OBTAIN ID_USER FROM TOKEN
+	const ID_USER = 1
+
+	if offset < 0 {
+		return []entities.WalletOperation{},errors.New("offset deve ser maior ou igual a 0")
+	}
+
+	operations,err := uc.repo.FetchDatasWalletOperation(ID_USER,offset)
+	if err != nil {
+		return nil,err
+	}
+	return operations,nil
+
+}
+

@@ -24,5 +24,10 @@ type WalletDatas struct {
 type WalletRequest struct {
 	TokenInvestor string `json:"tokenInvestor"`
 }
+type WalletOperation struct {
+	OperationType  string
+	OperationValue float64
+	DperationDate  string
+}
 
 	

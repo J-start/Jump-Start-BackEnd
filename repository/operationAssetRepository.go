@@ -52,8 +52,8 @@ func (oar *OperationAssetRepository) FetchAssetHistoryByInvestor(idInvestor int,
 		To use this endpoint, simply sum the value of the offset by 1 to use pagginated results.
 		OBS: offset must initate with value 0
 	*/
-	offset *= 10
-	query := fmt.Sprintf(`SELECT assetName,assetType,assetQuantity,assetValue,operationType,operationDate FROM tb_operationAsset WHERE idInvestor = %d LIMIT 10 OFFSET %d;`, idInvestor,offset)
+	offset *= 20
+	query := fmt.Sprintf(`SELECT assetName,assetType,assetQuantity,assetValue,operationType,operationDate FROM tb_operationAsset WHERE idInvestor = %d LIMIT 20 OFFSET %d;`, idInvestor,offset)
 
 	rows, err := oar.db.Query(query)
 	if err != nil {
