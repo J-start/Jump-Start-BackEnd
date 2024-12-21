@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
-    "jumpStart-backEnd/useCase/operation"
+	"errors"
+	"jumpStart-backEnd/entities"
+	"jumpStart-backEnd/useCase/operation"
 
 	"jumpStart-backEnd/handleError"
 	"net/http"
@@ -30,8 +32,15 @@ func (oac *OperationAssetController) FetchHistoryOperationInvestor(w http.Respon
 	
 	w.Header().Set("Content-Type", "application/json")
 
-	//TODO CREATE LOGIC TO OBTAIN ID INVESTOR AND OFFSET FROM body
-	response,err := oac.useCase.FetchAssetHistoryByInvestor(1,0)
+	var assetOperation entities.BodyAssetOperation
+
+	err := json.NewDecoder(r.Body).Decode(&assetOperation)
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
+		return
+	}
+
+	response,err := oac.useCase.FetchAssetHistoryByInvestor(assetOperation.TokenUser,assetOperation.OffSet)
 	if err != nil {
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, err.Error())
 		return

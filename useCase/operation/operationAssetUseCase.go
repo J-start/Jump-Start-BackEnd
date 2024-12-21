@@ -23,13 +23,14 @@ func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsert
 	return idOperation,nil
 }
 
-func (uc *OperationAssetUseCase) FetchAssetHistoryByInvestor(idInvestor int,offset int) ([]entities.AssetOperationHistory,error) {
-	//TODO create logic to validate id investor
+func (uc *OperationAssetUseCase) FetchAssetHistoryByInvestor(tokenUser string,offset int) ([]entities.AssetOperationHistory,error) {
+	//TODO create logic to obtain ID_USER from token
 	
+	const ID_USER = 1
 	if offset < 0 {
-		return []entities.AssetOperationHistory{},errors.New("offset deve ser maior que 0")
+		return []entities.AssetOperationHistory{},errors.New("offset deve ser maior ou igual a 0")
 	}
-	assetHistory,err := uc.repo.FetchAssetHistoryByInvestor(idInvestor,offset)
+	assetHistory,err := uc.repo.FetchAssetHistoryByInvestor(ID_USER,offset)
 	if err != nil {
 		return nil,err
 	}

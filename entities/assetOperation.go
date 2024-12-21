@@ -19,6 +19,11 @@ type AssetOperationHistory struct {
 	OperationDate  string
 }
 
+type BodyAssetOperation struct {
+	TokenUser      string
+	OffSet         int
+}
+
 type AssetInsertDataBase struct {
 	IdAsset            int
 	AssetName          string
