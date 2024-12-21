@@ -5,16 +5,20 @@ import (
 	"errors"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/serviceRepository"
 	"jumpStart-backEnd/useCase/operation"
+	"net/http"
+	"time"
 )
 
 type WalletUseCase struct {
 	repo                  *repository.WalletRepository
 	operationAssetUseCase *operation.OperationAssetUseCase
+	repositoryService 	  *servicerepository.ServiceRepository
 }
 
-func NewWalletUseCase(repo *repository.WalletRepository, operationAssetUseCase *operation.OperationAssetUseCase) *WalletUseCase {
-	return &WalletUseCase{repo: repo, operationAssetUseCase: operationAssetUseCase}
+func NewWalletUseCase(repo *repository.WalletRepository, operationAssetUseCase *operation.OperationAssetUseCase,repositoryService *servicerepository.ServiceRepository) *WalletUseCase {
+	return &WalletUseCase{repo: repo, operationAssetUseCase: operationAssetUseCase,repositoryService:repositoryService}
 }
 
 func (uc *WalletUseCase) InsertValueBalance(idInvestor int, value float64, idOperation int64, repositoryService *sql.Tx) error {
@@ -23,6 +27,10 @@ func (uc *WalletUseCase) InsertValueBalance(idInvestor int, value float64, idOpe
 		return errors.New("erro ao verificar saldo do usuário")
 	}
 	balance += value
+
+	if balance < 0 {
+		return errors.New("saldo invalido")
+	}
 
 	errInsert := uc.repo.UpdateBalanceInvestor(idInvestor, balance, idOperation, repositoryService)
 
@@ -129,20 +137,67 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 	return WalletDatas, nil
 }
 
-func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string,offset int) ([]entities.WalletOperation,error) {
+func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int) ([]entities.WalletOperation, error) {
 
 	//TODO CREATE LOGIC TO OBTAIN ID_USER FROM TOKEN
 	const ID_USER = 1
 
 	if offset < 0 {
-		return []entities.WalletOperation{},errors.New("offset deve ser maior ou igual a 0")
+		return []entities.WalletOperation{}, errors.New("offset deve ser maior ou igual a 0")
 	}
 
-	operations,err := uc.repo.FetchDatasWalletOperation(ID_USER,offset)
+	operations, err := uc.repo.FetchDatasWalletOperation(ID_USER, offset)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return operations,nil
+	return operations, nil
 
 }
 
+func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (int, string) {
+	// TODO CREATE LOGIC TO VALIDATE AND RECOVER ID INVESTOR
+	const ID_INVESTOR = 1
+	balance , err := uc.isInvestorValid(ID_INVESTOR)
+	if err != nil {
+		return http.StatusBadRequest, "dados do usuário inválidos"
+	}
+
+	repositoryService,errRepository := uc.repositoryService.StartTransaction()
+
+	if errRepository != nil {
+		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
+	}
+
+	if balance < operation.Value {
+		return http.StatusNotAcceptable, "saldo insuficiente"
+	}
+	balance -= operation.Value
+
+	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(ID_INVESTOR, balance,repositoryService)
+	if errUpdateBalance != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao atualizar saldo"
+	}
+
+	dateMysql := convertDateToMysql()
+	errInsert := uc.repo.InsertOperationWallet("WITHDRAW", operation.Value,dateMysql, ID_INVESTOR, repositoryService)
+	if errInsert != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao concluir operação, tente novamente"
+	}
+
+	errService := repositoryService.Commit()
+	if errService != nil {
+		repositoryService.Rollback()
+		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
+	}
+
+
+	return http.StatusOK, "operação realizada com sucesso"
+}
+
+func convertDateToMysql() string{
+	currentDate := time.Now()
+	dateMysql := currentDate.Format("2006-01-02")
+	return dateMysql
+}

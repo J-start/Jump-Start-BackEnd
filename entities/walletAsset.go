@@ -30,4 +30,16 @@ type WalletOperation struct {
 	DperationDate  string
 }
 
+type WalletOperationInsert struct {	
+	OperationType    string
+	OperationValue   float64
+	OperationDate    string
+	IdInvestor       string
+}
+
+type WalletOperationRequest struct {
+	TokenInvestor string `json:"tokenInvestor"`
+	Value 		  float64 `json:"value"`
+}
+
 	

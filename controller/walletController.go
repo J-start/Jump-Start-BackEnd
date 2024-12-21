@@ -87,5 +87,31 @@ func (wc *WalletController) FetchOperationsWallet(w http.ResponseWriter, r *http
 		return
 	}
 
+}
+
+func (wc *WalletController) WithDraw(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
 	
+	w.Header().Set("Content-Type", "application/json")
+
+	var datasOperation entities.WalletOperationRequest
+
+	err := json.NewDecoder(r.Body).Decode(&datasOperation)
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
+		return
+	}
+	code,message := wc.useCase.WithDraw(datasOperation)
+
+	handleError.WriteHTTPStatus(w, code, message)
+
 }
