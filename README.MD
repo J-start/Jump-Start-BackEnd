@@ -1,5 +1,8 @@
 # Jump-Start
 
+[Documentação dos endpoints](docs/endPoints.MD)
+
+
 ## Como executar o projeto localmente
 
 - Verificar se o docker está instalado

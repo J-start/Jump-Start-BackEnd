@@ -73,7 +73,7 @@ func main() {
 	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
 	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
 	http.HandleFunc("/withdraw/", walletController.WithDraw)
-	http.HandleFunc("/Deposit/", walletController.Deposit)
+	http.HandleFunc("/deposit/", walletController.Deposit)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

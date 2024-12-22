@@ -3,7 +3,6 @@ package wallet
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/serviceRepository"
@@ -209,7 +208,6 @@ func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int
 	if errBalanceDay != nil {
 		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
 	}
-	fmt.Println("balanceDay ",balanceDay)
 	if  (balanceDay + operation.Value) > 1000 {
 		return http.StatusNotAcceptable, "limite diário de depósito atingido"
 	}
