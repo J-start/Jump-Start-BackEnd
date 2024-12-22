@@ -49,7 +49,7 @@ func main() {
 	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
-	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase)
+	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
@@ -72,6 +72,8 @@ func main() {
 	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
 	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
 	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
+	http.HandleFunc("/withdraw/", walletController.WithDraw)
+	http.HandleFunc("/deposit/", walletController.Deposit)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

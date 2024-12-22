@@ -191,4 +191,233 @@ http://localhost:8080/sell/
   ```
 
   ## Se tudo ocorrer bem o código 200 é retornado com uma mensagem de sucesso, caso contrário, um código específico e uma mensagem de erro é retornado .
+
+
+
+  
 </details>
+<details>
+<summary>/details/asset/</summary>
+
+  ## Método do tipo GET que retorna a lista de ativos disponíveis de cada tipo.
+
+  ```bash
+  /details/asset/?type=SHARE
+  ```
+ ### O campo type pode receber 3 tipos, sendo eles: COIN ou CRYPTO ou SHARE
+  ### Exemplo de retorno:
+  ```json
+[
+  {
+    "id": 31,
+    "name": "AMBEV S/A ON (ABEV3.SA)",
+    "acronym": "ABEV3.SA",
+    "urlImage": "https://investidor10.com.br/storage/companies/66b65af53af6c.jpg",
+    "typeAsset": "SHARE"
+  },
+  {
+    "id": 32,
+    "name": "Banco do Brasil (BBAS3.SA)",
+    "acronym": "BBAS3.SA",
+    "urlImage": "https://investidor10.com.br/storage/companies/66b65b3de91ca.jpg",
+    "typeAsset": "SHARE"
+  },
+  {
+    "id": 33,
+    "name": "Cemig (CMIG4.SA)",
+    "acronym": "CMIG4.SA",
+    "urlImage": "https://investidor10.com.br/storage/companies/5ea0b6985411c.jpeg",
+    "typeAsset": "SHARE"
+  }
+]
+  ```
+</details>
+
+
+<details>
+<summary>/history/assets/</summary>
+
+  ## Método do tipo POST que retorna o histórico de compra e venda de ativos.
+
+  ```bash
+  /history/assets/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+  {
+      "TokenUser": "string",
+      "OffSet": 0     
+  } 
+
+```
+
+- TokenUser: token jwt do usuário
+- offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
+
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "AssetName": "BITCOIN",
+    "AssetType": "CRYPTOMOEDA",
+    "AssetQuantity": 0.0003,
+    "AssetValue": 320.89,
+    "OperationType": "BUY",
+    "OperationDate": "2024-10-27"
+  },
+  {
+    "AssetName": "BBAS3.SA",
+    "AssetType": "AÇÃO",
+    "AssetQuantity": 2,
+    "AssetValue": 14.78,
+    "OperationType": "BUY",
+    "OperationDate": "2024-10-26"
+  },
+]
+  ```
+</details>
+
+<details>
+<summary>/wallet/datas/</summary>
+
+  ## Método do tipo POST que retorna quais ativos/quantidade o usuário possui em carteira e o seu respectivo saldo atual.
+
+  ```bash
+  /wallet/datas/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+  {
+    "tokenInvestor": "string"
+  }
+
+```
+
+- tokenInvestor: token jwt do usuário
+
+  ### Exemplo de retorno:
+```json
+{
+  "InvestorBalance": 855.4034,
+  "Assets": [
+    {
+      "AssetName": "SEK-BRL",
+      "AssetType": "COIN",
+      "AssetQuantity": 12
+    },
+    {
+      "AssetName": "LINK-BRL",
+      "AssetType": "CRYPTO",
+      "AssetQuantity": 1
+    }
+  ]
+}
+  ```
+</details>
+
+
+<details>
+
+<summary>/history/operations/</summary>
+
+  ## Método do tipo POST que retorna o histórico de depósito e saque.
+
+  ```bash
+  /history/operations/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+{
+  "TokenUser  ": "string",
+  "offset":   0
+}
+
+```
+
+- TokenUser: token jwt do usuário
+- offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
+
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "OperationType": "WITHDRAW",
+    "OperationValue": 150,
+    "DperationDate": "2024-12-22"
+  },
+  {
+    "OperationType": "DEPOSIT",
+    "OperationValue": 50,
+    "DperationDate": "2024-12-22"
+  },
+  {
+    "OperationType": "DEPOSIT",
+    "OperationValue": 50,
+    "DperationDate": "2024-12-22"
+  }
+]
+  ```
+</details>
+
+<details>
+
+<summary>/withdraw/</summary>
+
+  ## Método do tipo POST que realiza um saque em carteira do usuário.
+
+  ```bash
+  /withdraw/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+{
+  "TokenInvestor ": "string",
+  "value":   50
+}
+
+```
+
+- TokenUser: token jwt do usuário
+- value: valor para realizar o saque, deve ser maior que 0
+
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "operação realizada com sucesso"
+}
+  ```
+</details>
+
+
+<details>
+
+<summary>/deposit/</summary>
+
+  ## Método do tipo POST que realiza um depósito em carteira do usuário.
+
+  ```bash
+  /withdraw/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+{
+  "TokenInvestor ": "string",
+  "value":   50
+}
+
+```
+
+- TokenUser: token jwt do usuário
+- value: valor para realizar o saque, deve ser maior que 0
+
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "operação realizada com sucesso"
+}
+  ```
+</details>
+
+  

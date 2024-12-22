@@ -65,6 +65,24 @@ func (wr *WalletRepository) UpdateBalanceInvestor(id int, value float64, idOpera
 	return nil
 }
 
+func (wr *WalletRepository) UpdateBalanceFromOperation(id int, value float64,repositoryService *sql.Tx) error {
+	tx := repositoryService
+
+	query := `UPDATE tb_wallet SET balance = ? WHERE idInvestor = ?`
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(value, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func (wr *WalletRepository) IsBalanceExists(id int) (float64, error) {
 	var balance float64
@@ -98,7 +116,7 @@ func (wr *WalletRepository) CreateBalanceUser(id int) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(0, id)
+	_, err = stmt.Exec(0,id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -183,6 +201,44 @@ func (wr *WalletRepository) FetchDatasWalletOperation(idInvestor, offset int) ([
 
 	return operationsWallet, nil
 
+}
+
+
+func (wr *WalletRepository) FetchDayDeposits(idInvestor int) (float64, error) {
+	query := `SELECT SUM(operationValue) FROM tb_walletOperation WHERE operationdate = DATE_FORMAT(NOW(),'%Y,%m,%d') AND operationType = 'DEPOSIT' AND idInvestor = ?`
+	var balanceDay float64
+	err := wr.db.QueryRow(query, idInvestor).Scan(&balanceDay)
+
+	if err != nil {
+
+		fmt.Println(err)
+		if err.Error() == `sql: Scan error on column index 0, name "SUM(operationValue)": converting NULL to float64 is unsupported` {
+			return 0, nil
+		}
+		return -1, errors.New("erro ao buscar saldo")
+	}
+
+	return balanceDay, nil
+}
+
+
+func (wr *WalletRepository) InsertOperationWallet(operationType string,operationValue float64,operationDate string,idInvestor int,repositoryService *sql.Tx) error {
+	tx := repositoryService
+
+	query := `INSERT INTO tb_walletOperation(operationType,operationValue,operationDate,idInvestor) VALUES (?, ?, ?, ?)`
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(operationType,operationValue,operationDate,idInvestor)
+	if err != nil {
+		return err
+	}
+
+
+	return nil
 }
 
 func buildoperationWallet(rows *sql.Rows) ([]entities.WalletOperation, error) {
