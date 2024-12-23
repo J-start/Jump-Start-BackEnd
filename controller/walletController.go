@@ -75,7 +75,7 @@ func (wc *WalletController) FetchOperationsWallet(w http.ResponseWriter, r *http
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
 		return
 	}
-	operationsDatas,err := wc.useCase.FetchOperationsWallet(datasOperation.TokenUser,datasOperation.OffSet)
+	operationsDatas,err := wc.useCase.FetchOperationsWallet(datasOperation.TokenInvestor,datasOperation.OffSet)
 
 	if err != nil {
 		handleError.WriteHTTPStatus(w, http.StatusBadRequest, err.Error())

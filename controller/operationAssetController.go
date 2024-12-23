@@ -40,7 +40,7 @@ func (oac *OperationAssetController) FetchHistoryOperationInvestor(w http.Respon
 		return
 	}
 
-	response,err := oac.useCase.FetchAssetHistoryByInvestor(assetOperation.TokenUser,assetOperation.OffSet)
+	response,err := oac.useCase.FetchAssetHistoryByInvestor(assetOperation.TokenInvestor,assetOperation.OffSet)
 	if err != nil {
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, err.Error())
 		return

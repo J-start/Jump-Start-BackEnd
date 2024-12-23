@@ -137,7 +137,7 @@ func buildShare(rows *sql.Rows) ([]entities.Share, error) {
 		if err != nil {
 			return nil, err
 		}
-		share.DateShare = dateShare.Format("2006-01-02")
+		share.DateShare = dateShare.Format("02-01-2006")
 
 		shares = append(shares, share)
 

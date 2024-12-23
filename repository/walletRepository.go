@@ -251,7 +251,7 @@ func buildoperationWallet(rows *sql.Rows) ([]entities.WalletOperation, error) {
 		if err != nil {
 			return nil, err
 		}
-		operation.DperationDate = date.Format("2006-01-02")
+		operation.DperationDate = date.Format("02-01-2006")
 		operationsWallet = append(operationsWallet, operation)
 
 	}

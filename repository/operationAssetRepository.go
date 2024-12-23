@@ -81,7 +81,7 @@ func buildAssetHistory(rows *sql.Rows) ([]entities.AssetOperationHistory, error)
 		if err != nil {
 			return nil, err
 		}
-		assetHistory.OperationDate = dateShare.Format("2006-01-02")
+		assetHistory.OperationDate = dateShare.Format("02-01-2006")
 
 		assetsHistory = append(assetsHistory, assetHistory)
 

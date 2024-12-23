@@ -12,6 +12,7 @@ import (
 	"jumpStart-backEnd/useCase/sell"
 	"jumpStart-backEnd/useCase/wallet"
 	"jumpStart-backEnd/useCase/listasset"
+	"jumpStart-backEnd/useCase/news"
 	"log"
 	"net/http"
 
@@ -45,8 +46,10 @@ func main() {
 	assetWalletRepository := repository.NewWalletAssetRepository(db)
 	serviceRepository := servicerepository.NewWServiceRepository(db)
 	listAssetRepository := repository.NewListAssetRepository(db)
+	newsRepository := repository.NewNewsRepository(db)
 
 	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
+	newsUseCase := news.NewNewsUseCase(newsRepository)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository)
@@ -54,6 +57,7 @@ func main() {
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	
+	newsController := controller.NewNewsController(newsUseCase)
 	listAssetController := controller.NewListAssetController(listAssetUseCase)
 	operationAssetController := controller.NewOperationAssetController(operationAssetUseCase)
 	BuyAssetController := controller.NewBuyAssetController(newBuyAssetsUseCase)
@@ -74,6 +78,8 @@ func main() {
 	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
 	http.HandleFunc("/withdraw/", walletController.WithDraw)
 	http.HandleFunc("/deposit/", walletController.Deposit)
+	http.HandleFunc("/news/", newsController.FetchNews)
+	http.HandleFunc("/news/delete/", newsController.DeleteNews)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

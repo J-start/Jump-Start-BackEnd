@@ -20,7 +20,7 @@ type AssetOperationHistory struct {
 }
 
 type BodyAssetOperation struct {
-	TokenUser      string
+	TokenInvestor      string
 	OffSet         int
 }
 
