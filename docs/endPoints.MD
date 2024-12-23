@@ -420,4 +420,60 @@ http://localhost:8080/sell/
   ```
 </details>
 
+
+<details>
+
+<summary>/news/</summary>
+
+  ## Método do tipo GET que busca notícias de forma paginada.
+
+  ```bash
+  /news/?offset=N
+  ```
+- offset: valor para paginação, começa em 0 e retorna até 12 notícias a cada incremento de 1
+
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "Id": 2,
+    "News": "{\"SHARE\": {\"description\": \"Onde investir em 2024: confira as melhores ações segundo o BB Investimentos  InvesTalk\", \"url\": \"https://news.google.com/rss/articles/CBMigAFBVV95cUxNMDZzQXEySGV4M3RmOTExMGIzb0tuUm5sLVQ4bnIyNnE1V0t6S1NadkRtZm5KOUoxUDlRVE5GN0FZVmo2UnpmdE9QQWZDTEJXdGtYQXUzWWl4bFNLSTlYU1pVUi1FQURqM1NwZ3NvWXo4c3k0UVZXQUtfS2ZmeGEtXw?oc=5&hl=en-US&gl=US&ceid=US:en\"}}",
+    "DateNews": "18-12-2024"
+  },
+  {
+    "Id": 3,
+    "News": "{\"COIN\": {\"description\": \"Dólar hoje: por que real é moeda que mais se desvalorizou e como será em 2025  BBC News Brasil\", \"url\": \"https://news.google.com/rss/articles/CBMiYkFVX3lxTE9iRThhVGFFSXh0YTJEZWRRUFlPU0ppSTFQRm1WRU5DMzZkRW5CM093YjVUekozMDNMOS15QW9Pb2FOWDZ0eDkzYTBwTlJqYjU0clFBV0dEcnp2RFBmcWd0a1Z30gFnQVVfeXFMTlJBQkFDNFA3OTI3cEdKTmR5X0daTzhDWlg5aF9pUGZsUTVIWi1XZFhtUDJBLWVQWnp4SHg1cGpwcjNLMUNsMlRNWF92SldTZ2R2TmRSMkJwYjYxMEVaZ0x0RmlUZC1uYw?oc=5&hl=en-US&gl=US&ceid=US:en\"}}",
+    "DateNews": "18-12-2024"
+  },
+]
+  ```
+</details>
+
+<details>
+
+<summary>/news/delete/</summary>
+
+  ## Método do tipo DELETE que deleta uma noticia de id específico.
+
+  ```bash
+  /news/delete/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "TokenInvestor":"CHZ",
+    "IdNews":-1
+  }
+```
+- TokenInvestor: Token do investidor que deve ser uma administrador para poder realizar a exclusão
+- IdNews: Id da noticia a ser excluída 
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "Noticia deletada com sucesso"
+}
+  ```
+</details>
+
   
