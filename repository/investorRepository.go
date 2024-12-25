@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"jumpStart-backEnd/entities"
 
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
@@ -27,6 +28,21 @@ func (ir *InvestorRepository) FetchIdInvestorByEmail(email string) (int, error) 
 	}
 
 	return id, nil
+}
+
+func (ir *InvestorRepository) FetchPasswordInvestorByEmail(email string) (entities.LoginInvestor, error) {
+	var investor entities.LoginInvestor
+	query := fmt.Sprintf(`SELECT investorPassword,investorEmail FROM tb_investor WHERE investorEmail = '%s' `, email)
+	err := ir.db.QueryRow(query).Scan(&investor.Password, &investor.Email)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return entities.LoginInvestor{}, errors.New("e-mail não encontrado")
+		}
+		return entities.LoginInvestor{}, err
+	}
+
+	return investor, nil
 }
 
 func (ir *InvestorRepository) CreateInvestorDB(name, email, password string) error {

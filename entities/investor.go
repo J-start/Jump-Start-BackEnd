@@ -5,3 +5,12 @@ type InvestorInsert struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 }
+
+type LoginInvestor struct{
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type TokenUser struct {
+	Token string `json:"token"`
+}

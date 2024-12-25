@@ -6,6 +6,7 @@ import (
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/security/encryption"
+	"jumpStart-backEnd/security/jwt"
 	"net/mail"
 	"os"
 	"strings"
@@ -22,7 +23,13 @@ func NewInvestorUseCase(repo *repository.InvestorRepository) *InvestorUseCase {
 }
 
 func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) error {
-	if err := validateFields(investor.Name, investor.Email, investor.Password); err != nil {
+	if !isEmailValid(investor.Email) {
+		return errors.New("email inválido")
+	}
+	if err := isNameValid(investor.Name); err != nil {
+		return err
+	}
+	if err := isPasswordValid(investor.Password); err != nil {
 		return err
 	}
 	key := getSecretyKey()
@@ -37,29 +44,81 @@ func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) erro
 	return nil
 }
 
+func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entities.TokenUser,error) {
+	if !isEmailValid(investor.Email){
+		return entities.TokenUser{},errors.New("email inválido")
+	}
+	if err := isPasswordValid(investor.Password); err != nil {
+		return entities.TokenUser{},err
+	}
 
-func validateFields(name,email,password string) error {
-	if name == "" || email == "" || password == "" {
-		return errors.New("todos os campos devem ser preenchidos")
+	
+    passwordDataBase,err := iu.repo.FetchPasswordInvestorByEmail(investor.Email)
+	if err != nil {
+		if err.Error() == "e-mail não encontrado"{
+			return entities.TokenUser{},err
+		}
+		return entities.TokenUser{},errors.New("erro ao realizar o login")
 	}
-	if strings.Trim(name, " ") == "" || strings.Trim(email, " ") == "" || strings.Trim(password, " ") == "" {
-		return errors.New("todos os campos devem ser preenchidos")
+
+	key := getSecretyKey()
+	decryptedPassword,err := encryption.DecryptMessage(key,passwordDataBase.Password)
+
+	if err != nil {
+		return entities.TokenUser{},errors.New("erro ao realizar o login")
 	}
-	if len(name) < 3 || len(name) > 50 {
-		return errors.New("nome deve ter entre 3 e 50 caracteres")
+
+	if decryptedPassword != investor.Password{
+		return entities.TokenUser{},errors.New("senha incorreta")
 	}
-	if len(password) < 8 || len(password) > 30 {
-		return errors.New("senha deve ter entre 6 e 50 caracteres")
+
+	if investor.Email != passwordDataBase.Email{
+		return entities.TokenUser{},errors.New("email incorreto")
 	}
-	if !isEmailValid(email) {
-		return errors.New("email inválido")
+
+	token,errToken := jwt.GenerateToken(investor.Email)
+
+	if errToken != nil {
+		fmt.Println(errToken)
+		return entities.TokenUser{},errors.New("erro ao realizar o login")
 	}
-	return nil
+
+	var tokenInvestor = entities.TokenUser{Token: token}
+
+	return tokenInvestor,nil
+	
 }
+
 
 func isEmailValid(email string) bool {
     _, err := mail.ParseAddress(email)
     return err == nil
+}
+
+func isNameValid(name string) error {
+	if name == ""{
+		return errors.New("nome vazio")
+	}
+	if len(name) < 3 || len(name) > 50 {
+		return errors.New("o nome deve ter entre 3 e 50 caracteres")
+	}
+	if strings.Trim(name, " ") == "" {
+		return errors.New("o nome deve ter entre 3 e 50 caracteres")
+	}
+	return nil
+}
+
+func isPasswordValid(password string) error {
+	if password == ""{
+		return errors.New("senha vazia")
+	}
+	if len(password) < 8 || len(password) > 30 {
+		return errors.New("senha deve ter entre 8 e 30 caracteres")
+	}
+	if strings.Trim(password, " ") == "" {
+		return errors.New("senha deve ter entre 8 e 30 caracteres")
+	}
+	return nil
 }
 
 func getSecretyKey() []byte{

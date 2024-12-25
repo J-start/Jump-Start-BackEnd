@@ -85,6 +85,7 @@ func main() {
 	http.HandleFunc("/news/", newsController.FetchNews)
 	http.HandleFunc("/news/delete/", newsController.DeleteNews)
 	http.HandleFunc("/investor/create/", investorController.CreateInvestor)
+	http.HandleFunc("/investor/login/", investorController.Login)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
