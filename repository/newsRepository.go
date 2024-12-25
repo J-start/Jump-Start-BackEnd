@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"jumpStart-backEnd/entities"
-	"log"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -19,12 +18,21 @@ func NewNewsRepository(db *sql.DB) *NewsRepository {
 	return &NewsRepository{db: db}
 }
 
-func (repo *NewsRepository) FindAllNews(offset int) ([]entities.NewsStructure, error) {
-    offset *= 12
-	query := fmt.Sprintf("SELECT id,news,datePublished FROM tb_news WHERE dateNews = DATE_FORMAT(NOW(), '%%Y,%%m,%%d') AND isApproved = 1 LIMIT 12 OFFSET %d", offset)
+func (repo *NewsRepository) FetchNumberNewsToday() (int,error){
+	var newsToday int
+	err := repo.db.QueryRow(`SELECT COUNT(id) AS contagem FROM tb_news WHERE dateNews = DATE_FORMAT(NOW(),"%Y,%m,%d")`).Scan(&newsToday)
+	if err != nil {
+		return 0,err
+	}
+
+	return newsToday,nil
+}
+
+func (repo *NewsRepository) FindAllNews(dateQuery string) ([]entities.NewsStructure, error) {
+	query := fmt.Sprintf("SELECT id,news,datePublished FROM tb_news WHERE dateNews = DATE_FORMAT('%s', '%%Y,%%m,%%d') AND isApproved = 1 LIMIT 12", dateQuery)
 	rows, err := repo.db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		return []entities.NewsStructure{}, err
 	}
 	defer rows.Close()
 
@@ -43,6 +51,7 @@ func (repo *NewsRepository) FindAllNews(offset int) ([]entities.NewsStructure, e
 
 	return newsList, nil
 }
+
 
 func (repo *NewsRepository) DeleteNews(idNews int) error {
 	query := fmt.Sprintf(`DELETE FROM tb_news WHERE id = %d `, idNews)
