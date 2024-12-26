@@ -60,9 +60,9 @@ func main() {
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
-													  operationAssetUseCase,assetWalletUseCase,serviceRepository)
+													  operationAssetUseCase,assetWalletUseCase,serviceRepository,investorService)
     NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
-													  operationAssetUseCase,assetWalletUseCase,serviceRepository)
+													  operationAssetUseCase,assetWalletUseCase,serviceRepository,investorService)
 	
 	investorController := controller.NewInvestorController(investorUseCase)	
 	newsController := controller.NewNewsController(newsUseCase)
