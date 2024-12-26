@@ -14,3 +14,13 @@ type LoginInvestor struct{
 type TokenUser struct {
 	Token string `json:"token"`
 }
+
+type SendCodeEmail struct {
+	Email string `json:"email"`
+}
+
+type CodeChangePassword struct {
+	Email string `json:"email"`
+	Code string `json:"code"`
+	NewPassword string `json:"newPassword"`
+}

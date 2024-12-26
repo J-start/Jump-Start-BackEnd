@@ -80,3 +80,70 @@ func (ic *InvestorController) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(token)
 
 }
+
+
+func (ic *InvestorController) SendCodeEmailRecoverPassword(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	var investor entities.SendCodeEmail
+
+	err := json.NewDecoder(r.Body).Decode(&investor)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	errA := ic.useCase.SendCodeToRecoverPassword(investor.Email)
+	if errA != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errA.Error())
+		return
+	}
+
+	handleError.WriteHTTPStatus(w, http.StatusOK, "Código enviado com sucesso")
+
+}
+
+func (ic *InvestorController) VerifyCodeEmail(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	var investor entities.CodeChangePassword
+
+	err := json.NewDecoder(r.Body).Decode(&investor)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	errB := ic.useCase.VerifyCode(investor.Email,investor.Code,investor.NewPassword)
+	if errB != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errB.Error())
+		return
+	}
+
+	handleError.WriteHTTPStatus(w, http.StatusOK, "Sucesso!")
+
+}

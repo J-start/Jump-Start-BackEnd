@@ -58,6 +58,34 @@ func (ir *InvestorRepository) FetchPasswordInvestorByEmail(email string) (entiti
 	return investor, nil
 }
 
+func (ir *InvestorRepository) FetchCodeInvestorByEmail(email string) (string, error) {
+	var code string
+	query := fmt.Sprintf(`SELECT operationCode FROM tb_investor WHERE investorEmail = '%s' `, email)
+	err := ir.db.QueryRow(query).Scan(&code)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("e-mail não encontrado")
+		}
+		return "", err
+	}
+
+	return code, nil
+}
+
+func (ir *InvestorRepository) UpdatePasswordInvestor(email, newPassword string) error {
+	query := `
+		UPDATE tb_investor
+		SET investorPassword = ?
+		WHERE investorEmail = ?`
+	_, err := ir.db.Exec(query, newPassword, email)
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("erro ao atualizar a senha")
+	}
+	return nil
+}
+
 func (ir *InvestorRepository) CreateInvestorDB(name, email, password string) error {
 	const ROLE = "USER"
 	query := `
@@ -77,6 +105,21 @@ func (ir *InvestorRepository) CreateInvestorDB(name, email, password string) err
 	return nil
 }
 
+
+func (ir *InvestorRepository) UpdateCodeInvestor(email, code string) error {
+	query := `
+		UPDATE tb_investor
+		SET operationCode = ?
+		WHERE investorEmail = ?
+`
+	_, err := ir.db.Exec(query, code, email)
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("erro ao atualizar código")
+	}
+	return nil
+}
+
 func (ir *InvestorRepository) UpdateDatasInvestor(name string, idInvestor int) error {
 	query := `
 		UPDATE tb_investor
@@ -90,18 +133,6 @@ func (ir *InvestorRepository) UpdateDatasInvestor(name string, idInvestor int) e
 	return nil
 }
 
-func (ir *InvestorRepository) UpdatePasswordInvestor(password string, idInvestor int) error {
-	query := `
-		UPDATE tb_investor
-		SET investorPassword = ?
-		WHERE idInvestor = ?
-`
-	_, err := ir.db.Exec(query, password, idInvestor)
-	if err != nil {
-		return errors.New("erro ao atualiza senha")
-	}
-	return nil
-}
 
 func (ir *InvestorRepository) ChangeAccountStatusInvestor(isAccountValid bool,idInvestor int) error {
 
