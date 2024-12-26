@@ -20,7 +20,6 @@ func TestEncryptDecryptMessage(t *testing.T) {
 	message := "Lorem ipsum dolor sit amet"
 
 	encrypted, err := EncryptMessage(key, message)
-	fmt.Println(encrypted)
 	require.Nil(t, err)
 	require.Regexp(t, isBase64, encrypted)
 

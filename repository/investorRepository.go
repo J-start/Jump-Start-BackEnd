@@ -30,6 +30,19 @@ func (ir *InvestorRepository) FetchIdInvestorByEmail(email string) (int, error) 
 	return id, nil
 }
 
+func (ir *InvestorRepository) FetchRoleInvestor(email string) (string, error){
+	var role string
+	query := fmt.Sprintf(`SELECT investorRole FROM tb_investor WHERE investorEmail = '%s' `, email)
+	err := ir.db.QueryRow(query).Scan(&role)
+
+	if err != nil {
+		return "", err
+	}
+
+	return role, nil
+}
+
+
 func (ir *InvestorRepository) FetchPasswordInvestorByEmail(email string) (entities.LoginInvestor, error) {
 	var investor entities.LoginInvestor
 	query := fmt.Sprintf(`SELECT investorPassword,investorEmail FROM tb_investor WHERE investorEmail = '%s' `, email)

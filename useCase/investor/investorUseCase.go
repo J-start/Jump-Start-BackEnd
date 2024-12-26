@@ -10,7 +10,6 @@ import (
 	"net/mail"
 	"os"
 	"strings"
-
 	"github.com/joho/godotenv"
 )
 
@@ -33,7 +32,7 @@ func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) erro
 		return err
 	}
 	key := getSecretyKey()
-	encryptedPassword,err := encryption.EncryptMessage(key,investor.Password)
+	encryptedPassword, err := encryption.EncryptMessage(key, investor.Password)
 	if err != nil {
 		return err
 	}
@@ -44,59 +43,52 @@ func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) erro
 	return nil
 }
 
-func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entities.TokenUser,error) {
-	if !isEmailValid(investor.Email){
-		return entities.TokenUser{},errors.New("email inválido")
+func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entities.TokenUser, error) {
+	if !isEmailValid(investor.Email) {
+		return entities.TokenUser{}, errors.New("email inválido")
 	}
 	if err := isPasswordValid(investor.Password); err != nil {
-		return entities.TokenUser{},err
+		return entities.TokenUser{}, err
 	}
 
-	
-    passwordDataBase,err := iu.repo.FetchPasswordInvestorByEmail(investor.Email)
+	passwordDataBase, err := iu.repo.FetchPasswordInvestorByEmail(investor.Email)
 	if err != nil {
-		if err.Error() == "e-mail não encontrado"{
-			return entities.TokenUser{},err
+		if err.Error() == "e-mail não encontrado" {
+			return entities.TokenUser{}, err
 		}
-		return entities.TokenUser{},errors.New("erro ao realizar o login")
+		return entities.TokenUser{}, errors.New("erro ao realizar o login")
 	}
 
 	key := getSecretyKey()
-	decryptedPassword,err := encryption.DecryptMessage(key,passwordDataBase.Password)
+	decryptedPassword, err := encryption.DecryptMessage(key, passwordDataBase.Password)
 
 	if err != nil {
-		return entities.TokenUser{},errors.New("erro ao realizar o login")
+		return entities.TokenUser{}, errors.New("erro ao realizar o login")
 	}
 
-	if decryptedPassword != investor.Password{
-		return entities.TokenUser{},errors.New("senha incorreta")
+	if decryptedPassword != investor.Password {
+		return entities.TokenUser{}, errors.New("senha incorreta")
 	}
 
-	if investor.Email != passwordDataBase.Email{
-		return entities.TokenUser{},errors.New("email incorreto")
-	}
-
-	token,errToken := jwt.GenerateToken(investor.Email)
+	token, errToken := jwt.GenerateToken(investor.Email)
 
 	if errToken != nil {
-		fmt.Println(errToken)
-		return entities.TokenUser{},errors.New("erro ao realizar o login")
+		return entities.TokenUser{}, errors.New("erro ao realizar o login")
 	}
 
 	var tokenInvestor = entities.TokenUser{Token: token}
 
-	return tokenInvestor,nil
-	
+	return tokenInvestor, nil
+
 }
 
-
 func isEmailValid(email string) bool {
-    _, err := mail.ParseAddress(email)
-    return err == nil
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
 func isNameValid(name string) error {
-	if name == ""{
+	if name == "" {
 		return errors.New("nome vazio")
 	}
 	if len(name) < 3 || len(name) > 50 {
@@ -109,7 +101,7 @@ func isNameValid(name string) error {
 }
 
 func isPasswordValid(password string) error {
-	if password == ""{
+	if password == "" {
 		return errors.New("senha vazia")
 	}
 	if len(password) < 8 || len(password) > 30 {
@@ -121,11 +113,11 @@ func isPasswordValid(password string) error {
 	return nil
 }
 
-func getSecretyKey() []byte{
+func getSecretyKey() []byte {
 	err2 := godotenv.Load()
-    if err2 != nil {
+	if err2 != nil {
 		fmt.Println("Erro ao carregar o arquivo .env")
-    }
+	}
 	PASSWORD := os.Getenv("ENCRYPT_KEY")
 	jwtSecret := []byte(PASSWORD)
 

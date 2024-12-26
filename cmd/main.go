@@ -4,19 +4,19 @@ import (
 	"jumpStart-backEnd/controller"
 	"jumpStart-backEnd/db"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/service/investor_service"
 	"jumpStart-backEnd/serviceRepository"
 	"jumpStart-backEnd/useCase"
 	"jumpStart-backEnd/useCase/assetwallet"
 	"jumpStart-backEnd/useCase/buy"
-	"jumpStart-backEnd/useCase/operation"
-	"jumpStart-backEnd/useCase/sell"
-	"jumpStart-backEnd/useCase/wallet"
 	"jumpStart-backEnd/useCase/investor"
 	"jumpStart-backEnd/useCase/listasset"
 	"jumpStart-backEnd/useCase/news"
+	"jumpStart-backEnd/useCase/operation"
+	"jumpStart-backEnd/useCase/sell"
+	"jumpStart-backEnd/useCase/wallet"
 	"log"
 	"net/http"
-
 )
 
 func main() {
@@ -50,15 +50,19 @@ func main() {
 	newsRepository := repository.NewNewsRepository(db)
 	investorRepository := repository.NewInvestorRepository(db)
 
+	investorService := investor_service.NewInvestorService(investorRepository)
+
 	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
 	investorUseCase := investor.NewInvestorUseCase(investorRepository)
-	newsUseCase := news.NewNewsUseCase(newsRepository)
+	newsUseCase := news.NewNewsUseCase(newsRepository,investorService)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
-	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
-	NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, operationAssetUseCase,assetWalletUseCase,serviceRepository)
+	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
+													  operationAssetUseCase,assetWalletUseCase,serviceRepository)
+    NewSellAssetsUseCase := sell.NewSellAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
+													  operationAssetUseCase,assetWalletUseCase,serviceRepository)
 	
 	investorController := controller.NewInvestorController(investorUseCase)	
 	newsController := controller.NewNewsController(newsUseCase)
