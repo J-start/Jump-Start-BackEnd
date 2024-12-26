@@ -1,15 +1,21 @@
 package investor
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
+
 	"jumpStart-backEnd/security/encryption"
-	"jumpStart-backEnd/security/jwt"
+	"jumpStart-backEnd/security/jwt_security"
+
+	"jumpStart-backEnd/service/email_service"
 	"net/mail"
 	"os"
 	"strings"
+
 	"github.com/joho/godotenv"
 )
 
@@ -70,7 +76,7 @@ func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entit
 		return entities.TokenUser{}, errors.New("senha incorreta")
 	}
 
-	token, errToken := jwt.GenerateToken(investor.Email)
+	token, errToken := jwt_security.GenerateToken(investor.Email)
 
 	if errToken != nil {
 		return entities.TokenUser{}, errors.New("erro ao realizar o login")
@@ -80,6 +86,83 @@ func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entit
 
 	return tokenInvestor, nil
 
+}
+
+func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
+	//TODO VERIFY IF EMAIL EXISTS IN THE DATABASE
+	if !isEmailValid(email){
+		return errors.New("email invalido")
+	}
+	code,errCode := generateRandomString(3)
+	if errCode != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errCode.Error())
+	}
+
+	credentials,errCredentials := recoverCredentialsEmail()
+	if errCredentials != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errCredentials.Error())
+	}
+
+	bodyEmail := "Código para recuperação: "+ code
+    
+	key,errKey := getKeyEncryption()
+	if errKey != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errKey.Error())
+	}
+
+	codeEncryption,errCrypto := encryption.EncryptMessage(key,code)
+	if errCrypto != nil{
+		return errors.New("ocoreu um erro, tente novamente"+errCrypto.Error())
+	}
+
+	errUpdate := iu.repo.UpdateCodeInvestor(email,codeEncryption)
+	if errUpdate != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errUpdate.Error())
+	}
+
+	errEmail := email_service.SendEmail(email,credentials[0],credentials[1],"Jump start - Código recuperação de senha",bodyEmail)
+	if errEmail != nil {
+		return errors.New("ocoreu um erro, tente novamente")
+	}
+	return nil
+}
+
+func (iu *InvestorUseCase) VerifyCode(email,code,newPassword string) error {
+	//TODO VERIFY IF EMAIL EXISTS IN THE DATABASE
+
+	if !isEmailValid(email){
+		return errors.New("email invalido")
+	}
+
+	codeEncrypted,errDb := iu.repo.FetchCodeInvestorByEmail(email)
+	if errDb != nil {
+		return errors.New("aconteceu algum erro, tente novamente")
+	}
+
+	key,errKey := getKeyEncryption()
+	if errKey != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errKey.Error())
+	}
+
+	codeDescrypted, errDecryp := encryption.DecryptMessage(key,codeEncrypted)
+	if errDecryp != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errDecryp.Error())
+	}
+
+	if codeDescrypted != code {
+		return errors.New("código incorreto")
+	}
+	passwordEncrypted, errEncrypted :=  encryption.EncryptMessage(key,newPassword)
+	if errEncrypted != nil {
+		return errors.New("ocoreu um erro, tente novamente"+errEncrypted.Error())
+	}
+
+	err := iu.repo.UpdatePasswordInvestor(email,passwordEncrypted)
+	if err != nil {
+		return errors.New("ocoreu um erro, tente novamente"+err.Error())
+	}
+
+	return nil
 }
 
 func isEmailValid(email string) bool {
@@ -123,3 +206,39 @@ func getSecretyKey() []byte {
 
 	return jwtSecret
 }
+
+
+
+func generateRandomString(length int) (string,error) {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+	   return "",err
+	}
+	return base64.StdEncoding.EncodeToString(b),nil
+ }
+
+ func recoverCredentialsEmail() ([]string,error){
+	err2 := godotenv.Load()
+	if err2 != nil {
+		return nil,err2
+	}
+	PASSWORD_EMAIL := os.Getenv("PASSWORD_EMAIL")
+	ADRESS_EMAIL := os.Getenv("ADRESS_EMAIL")
+	
+	credentials := []string{ADRESS_EMAIL,PASSWORD_EMAIL}
+
+	return credentials,nil
+ }
+
+ func getKeyEncryption() ([]byte,error) {
+	err2 := godotenv.Load()
+	if err2 != nil {
+		return nil,errors.New("ocorreu um erro")
+	}
+	PASSWORD := os.Getenv("ENCRYPT_KEY")
+	key := []byte(PASSWORD)
+
+	return key,nil
+ }
+

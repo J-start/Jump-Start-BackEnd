@@ -3,8 +3,10 @@ package investor_service
 import (
 	"errors"
 	"jumpStart-backEnd/repository"
-	"jumpStart-backEnd/security/jwt"
+	"jumpStart-backEnd/security/jwt_security"
+	
 )
+
 
 type InvestorService struct {
 	repo *repository.InvestorRepository
@@ -15,7 +17,7 @@ func NewInvestorService(repo *repository.InvestorRepository) *InvestorService {
 }
 
 func (is *InvestorService) GetIdByToken(token string) (int,error) {
-	email,err := jwt.ValidateToken(token)
+	email,err := jwt_security.ValidateToken(token)
 	if err != nil {
 		return -1,errors.New("token inválido")
 	}
@@ -27,7 +29,7 @@ func (is *InvestorService) GetIdByToken(token string) (int,error) {
 }
 
 func (is *InvestorService) IsAdm(token string) (bool,error) {
-	email,err := jwt.ValidateToken(token)
+	email,err := jwt_security.ValidateToken(token)
 	if err != nil {
 		return false,errors.New("token inválido")
 	}
@@ -40,5 +42,7 @@ func (is *InvestorService) IsAdm(token string) (bool,error) {
 	}
 	return false,nil
 }
+
+
 
 

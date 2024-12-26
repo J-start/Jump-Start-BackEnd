@@ -72,6 +72,8 @@ func main() {
 	http.HandleFunc("/news/delete/", newsController.DeleteNews)
 	http.HandleFunc("/investor/create/", investorController.CreateInvestor)
 	http.HandleFunc("/investor/login/", investorController.Login)
+	http.HandleFunc("/investor/password/code", investorController.SendCodeEmailRecoverPassword)
+	http.HandleFunc("/investor/password/update", investorController.VerifyCodeEmail)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
