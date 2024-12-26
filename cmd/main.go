@@ -21,24 +21,6 @@ import (
 
 func main() {
 
-	//   asset := entities.AssetOperation{
-	//   AssetName: "CHZ",
-	//   AssetCode: "CHZ-BRL",
-	//   AssetType: "CRYPTO",
-	//   AssetAmount: 10,
-	//   OperationType: "SELL",
-	//   CodeInvestor: "123456",
-	//    }
-
-	//  asset := entities.AssetOperation{
-	//  	AssetName: "PETROBRAS PN (PETR4.SA)",
-	//  	AssetCode: "PETR4.SA",
-	//  	AssetType: "SHARE",
-	//  	AssetAmount: 10,
-	//  	OperationType: "SELL",
-	//  	CodeInvestor: "123456",
-	//  }
-
 	db := db.GetDB()
 
 	shareRepository := repository.NewShareRepository(db)
@@ -56,8 +38,8 @@ func main() {
 	investorUseCase := investor.NewInvestorUseCase(investorRepository)
 	newsUseCase := news.NewNewsUseCase(newsRepository,investorService)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
-	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository)
-	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository)
+	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository,investorService)
+	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository,investorService)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
 													  operationAssetUseCase,assetWalletUseCase,serviceRepository,investorService)
