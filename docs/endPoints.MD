@@ -476,4 +476,91 @@ http://localhost:8080/sell/
   ```
 </details>
 
+<details>
+  <summary>/investor/create/</summary>
+
+  ## Método do tipo POST que cria um investidor.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "name":"teste",
+    "email":"testeEmail@gmail.com",
+    "password":"teste"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "code": 200,
+  "message": "Investidor criado com sucesso"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/login/</summary>
+
+  ## Método do tipo POST que realiza o login de um investidor e retorna um token JWT.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com",
+    "password":"teste"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyRW1haWwiOiJ0ZXN0ZUVtYWlsQGdtYWlsLmNvbSIsImV4cCI6MTczNTQxNjEzNiwiaWF0IjoxNzM1MzI5NzM2fQ.U0QoOrYEz3Lh_0IQ2zXSPaiowbiuj3lhTtsvIJeJkoU"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/password/code/</summary>
+
+  ## Método do tipo POST que envia um código para o email do investidor. enpoint pensado para validação de conta e alteração de senha.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "code": 200,
+  "message": "Código enviado com sucesso"
+}
+  ```
+</details>
+
+</details>
+
+<details>
+  <summary>/investor/password/update/</summary>
+
+  ## Método do tipo POST que altera a senha de um investidor, se baseando na validação do código enviado ao email.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com",
+    "code":"teste",
+    "newPassword":"novasenha"
+  }
+
+```
+  - code: código enviado ao email atraves do endpoint /investor/password/code/
+  - newPassword: nova senha do investidor
+
+  ### Exemplo de retorno:
+  ```json
+  {
+    "code": 200,
+    "message": "Sucesso!"
+  }
+  ```
+</details>
+
+
   
