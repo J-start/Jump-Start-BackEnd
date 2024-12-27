@@ -55,7 +55,7 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 	if err != nil {
 		return http.StatusNotAcceptable, err.Error()
 	}
-	idInvestor := 1
+	idInvestor := 2
 	// idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
 	// if err != nil {
 	// 	repositoryService.Rollback()

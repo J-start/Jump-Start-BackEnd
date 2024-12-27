@@ -221,6 +221,23 @@ func (wr *WalletRepository) FetchDayDeposits(idInvestor int) (float64, error) {
 	return balanceDay, nil
 }
 
+func (wr *WalletRepository) CreateWallet(idInvestor int,repositoryService *sql.Tx) error{
+		tx := repositoryService
+		query := ` INSERT INTO tb_wallet (balance, idInvestor) VALUES (?, ?) `
+		stmt, err := tx.Prepare(query)
+		if err != nil {
+			return errors.New("ocorreu um erro, tente novamente")
+		}
+		defer stmt.Close()
+		_, errExec := stmt.Exec(1000, idInvestor)
+		if errExec != nil {
+			fmt.Println(errExec)
+			return errors.New("erro ao criar carteira")
+		}
+		return nil
+	
+}
+
 
 func (wr *WalletRepository) InsertOperationWallet(operationType string,operationValue float64,operationDate string,idInvestor int,repositoryService *sql.Tx) error {
 	tx := repositoryService

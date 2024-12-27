@@ -95,7 +95,7 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 	// if err != nil {
 	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
 	// }
-	const ID_INVESTOR = 1
+	const ID_INVESTOR = 2
 	balanceChan := make(chan struct {
 		result float64
 		err    error
@@ -149,7 +149,7 @@ func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int)
 	// if err != nil {
 	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
 	// }
-	const ID_USER = 1
+	const ID_USER = 2
 
 	if offset < 0 {
 		return []entities.WalletOperation{}, errors.New("offset deve ser maior ou igual a 0")
@@ -168,7 +168,7 @@ func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (in
 	// if err != nil {
 	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
 	// }
-	const ID_INVESTOR = 1
+	const ID_INVESTOR = 2
 	balance , err := uc.isInvestorValid(ID_INVESTOR)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"
@@ -213,7 +213,7 @@ func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int
 	// if err != nil {
 	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
 	// }
-	const ID_INVESTOR = 1
+	const ID_INVESTOR = 2
 	balance , err := uc.isInvestorValid(ID_INVESTOR)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"
@@ -259,6 +259,17 @@ func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int
 
 
 	return http.StatusOK, "operação realizada com sucesso"
+}
+
+func (uc *WalletUseCase) CreateWallet(idInvestor int,repositoryService *sql.Tx) error {
+	if idInvestor <= 0 {
+		return errors.New("id inválido")
+	}
+	err := uc.repo.CreateWallet(idInvestor,repositoryService)
+	if err != nil {
+		return errors.New("erro ao criar carteira")
+	}
+	return nil
 }
 
 func convertDateToMysql() string{

@@ -7,7 +7,7 @@ import (
 	"jumpStart-backEnd/entities"
 
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
+
 )
 
 type InvestorRepository struct {
@@ -58,6 +58,23 @@ func (ir *InvestorRepository) FetchPasswordInvestorByEmail(email string) (entiti
 	return investor, nil
 }
 
+func (ir *InvestorRepository) IsEmailExists(email string) (string, error) {
+	var emailInvestor string
+	query := fmt.Sprintf(`SELECT investorEmail FROM tb_investor WHERE investorEmail = '%s' `, email)
+	err := ir.db.QueryRow(query).Scan(&emailInvestor)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("e-mail não encontrado")
+		}
+		return "", err
+	}
+
+	return emailInvestor, nil
+}
+
+
+
 func (ir *InvestorRepository) FetchCodeInvestorByEmail(email string) (string, error) {
 	var code string
 	query := fmt.Sprintf(`SELECT operationCode FROM tb_investor WHERE investorEmail = '%s' `, email)
@@ -87,23 +104,33 @@ func (ir *InvestorRepository) UpdatePasswordInvestor(email, newPassword string) 
 	return nil
 }
 
-func (ir *InvestorRepository) CreateInvestorDB(name, email, password string) error {
+func (ir *InvestorRepository) CreateInvestorDB(name, email, password string,repositoryService *sql.Tx) (int,error) {
+	tx := repositoryService
 	const ROLE = "USER"
-	query := `
-		INSERT INTO tb_investor 
-		(InvestorName, InvestorEmail, InvestorPassword, InvestorRole, operationCode, isAccountValid)
-		VALUES (?, ?, ?, ?, ?, ?)
-	`
-	_, err := ir.db.Exec(query, name, email, password, ROLE, "", false)
+	query := ` INSERT INTO tb_investor (InvestorName, InvestorEmail, InvestorPassword, InvestorRole, operationCode, isAccountValid) VALUES (?, ?, ?, ?, ?, ?) `
+	
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return -1,err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Exec(name, email, password, ROLE, "", true)
 	if err != nil {
 		if sqlErr, ok := err.(*mysql.MySQLError); ok {
 			if sqlErr.Number == 1062 {
-				return errors.New("e-mail já está em uso")
+				return -1,errors.New("e-mail já está em uso")
 			}
 		}
-		return errors.New("erro ao criar novo investidor")
+		return -1,errors.New("erro ao criar novo investidor")
 	}
-	return nil
+
+	idReturn , errLastId := rows.LastInsertId()
+	if errLastId != nil {
+		return -1,errLastId
+	}
+
+	return int(idReturn),nil
 }
 
 

@@ -31,7 +31,7 @@ func (uc *OperationAssetUseCase) FetchAssetHistoryByInvestor(tokenInvestor strin
 	//  if err != nil {
 	//  	return []entities.AssetOperationHistory{}, errors.New("token inválido, realize o login novamente")
 	//  }
-	const ID_USER = 1
+	const ID_USER = 2
 	if offset < 0 {
 		return []entities.AssetOperationHistory{},errors.New("offset deve ser maior ou igual a 0")
 	}

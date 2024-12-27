@@ -35,11 +35,12 @@ func main() {
 	investorService := investor_service.NewInvestorService(investorRepository)
 
 	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
-	investorUseCase := investor.NewInvestorUseCase(investorRepository)
+	
 	newsUseCase := news.NewNewsUseCase(newsRepository,investorService)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository,investorService)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository,investorService)
+	investorUseCase := investor.NewInvestorUseCase(investorRepository,walletUseCase,serviceRepository)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
 													  operationAssetUseCase,assetWalletUseCase,serviceRepository,investorService)
@@ -72,8 +73,8 @@ func main() {
 	http.HandleFunc("/news/delete/", newsController.DeleteNews)
 	http.HandleFunc("/investor/create/", investorController.CreateInvestor)
 	http.HandleFunc("/investor/login/", investorController.Login)
-	http.HandleFunc("/investor/password/code", investorController.SendCodeEmailRecoverPassword)
-	http.HandleFunc("/investor/password/update", investorController.VerifyCodeEmail)
+	http.HandleFunc("/investor/password/code/", investorController.SendCodeEmailRecoverPassword)
+	http.HandleFunc("/investor/password/update/", investorController.VerifyCodeEmail)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

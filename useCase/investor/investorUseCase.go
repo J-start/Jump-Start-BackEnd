@@ -7,24 +7,25 @@ import (
 	"fmt"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
-
 	"jumpStart-backEnd/security/encryption"
 	"jumpStart-backEnd/security/jwt_security"
-
+	 "jumpStart-backEnd/serviceRepository"
+	"jumpStart-backEnd/useCase/wallet"
 	"jumpStart-backEnd/service/email_service"
 	"net/mail"
 	"os"
 	"strings"
-
 	"github.com/joho/godotenv"
 )
 
 type InvestorUseCase struct {
 	repo *repository.InvestorRepository
+	walletUseCase  *wallet.WalletUseCase
+	repositoryService *servicerepository.ServiceRepository
 }
 
-func NewInvestorUseCase(repo *repository.InvestorRepository) *InvestorUseCase {
-	return &InvestorUseCase{repo: repo}
+func NewInvestorUseCase(repo *repository.InvestorRepository,walletUseCase  *wallet.WalletUseCase,repositoryService *servicerepository.ServiceRepository) *InvestorUseCase {
+	return &InvestorUseCase{repo: repo,walletUseCase:walletUseCase,repositoryService:repositoryService}
 }
 
 func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) error {
@@ -42,9 +43,28 @@ func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) erro
 	if err != nil {
 		return err
 	}
-	errCreate := iu.repo.CreateInvestorDB(investor.Name, investor.Email, encryptedPassword)
+
+	repositoryService,err := iu.repositoryService.StartTransaction()
+	if err != nil {
+		return errors.New("erro ao processar requisição, tente novamente")
+	}
+
+	id,errCreate := iu.repo.CreateInvestorDB(investor.Name, investor.Email, encryptedPassword,repositoryService)
 	if errCreate != nil {
+		repositoryService.Rollback()
 		return errCreate
+	}
+
+	errWallet := iu.walletUseCase.CreateWallet(id,repositoryService)
+	if errWallet != nil {
+		repositoryService.Rollback()
+		return errWallet
+	}
+
+	errService := repositoryService.Commit()
+	if errService != nil {
+		repositoryService.Rollback()
+		return errors.New("erro ao processar requisição, tente novamente")
 	}
 	return nil
 }
@@ -89,7 +109,14 @@ func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entit
 }
 
 func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
-	//TODO VERIFY IF EMAIL EXISTS IN THE DATABASE
+	_,errEmailDB := iu.repo.IsEmailExists(email)
+	if errEmailDB != nil {
+		if errEmailDB.Error() == "e-mail não encontrado" {
+			return errors.New("email não encontrado")
+		}else{
+			return errors.New("ocoreu um erro, tente novamente")
+		}
+	}
 	if !isEmailValid(email){
 		return errors.New("email invalido")
 	}
@@ -128,7 +155,14 @@ func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
 }
 
 func (iu *InvestorUseCase) VerifyCode(email,code,newPassword string) error {
-	//TODO VERIFY IF EMAIL EXISTS IN THE DATABASE
+	_,errEmailDB := iu.repo.IsEmailExists(email)
+	if errEmailDB != nil {
+		if errEmailDB.Error() == "e-mail não encontrado" {
+			return errors.New("email não encontrado")
+		}else{
+			return errors.New("ocoreu um erro, tente novamente")
+		}
+	}
 
 	if !isEmailValid(email){
 		return errors.New("email invalido")
