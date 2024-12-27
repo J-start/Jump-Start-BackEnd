@@ -245,13 +245,11 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
   {
-      "TokenUser": "string",
       "OffSet": 0     
   } 
 
 ```
-
-- TokenUser: token jwt do usuário
+ ### Obs: é necessário passar o token JWT do usuário para o Bearer 
 - offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
 
   ### Exemplo de retorno:
@@ -285,13 +283,8 @@ http://localhost:8080/sell/
   ```bash
   /wallet/datas/
   ```
- ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
-```json
-  {
-    "tokenInvestor": "string"
-  }
 
-```
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
 
 - tokenInvestor: token jwt do usuário
 
@@ -328,13 +321,13 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenUser  ": "string",
   "offset":   0
 }
 
 ```
 
-- TokenUser: token jwt do usuário
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+
 - offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
 
   ### Exemplo de retorno:
@@ -371,13 +364,13 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenInvestor ": "string",
   "value":   50
 }
 
 ```
 
-- TokenUser: token jwt do usuário
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+
 - value: valor para realizar o saque, deve ser maior que 0
 
   ### Exemplo de retorno:
@@ -402,14 +395,14 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenInvestor ": "string",
   "value":   50
 }
 
 ```
 
-- TokenUser: token jwt do usuário
 - value: valor para realizar o saque, deve ser maior que 0
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
 
   ### Exemplo de retorno:
 ```json
@@ -461,12 +454,11 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
    {
-    "TokenInvestor":"CHZ",
     "IdNews":-1
   }
 ```
-- TokenInvestor: Token do investidor que deve ser uma administrador para poder realizar a exclusão
 - IdNews: Id da noticia a ser excluída 
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
   ### Exemplo de retorno:
 ```json
 {
