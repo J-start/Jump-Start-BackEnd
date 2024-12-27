@@ -182,7 +182,6 @@ func (iu *InvestorUseCase) VerifyCode(email,code,newPassword string) error {
 	if errDecryp != nil {
 		return errors.New("ocoreu um erro, tente novamente"+errDecryp.Error())
 	}
-
 	if codeDescrypted != code {
 		return errors.New("código incorreto")
 	}

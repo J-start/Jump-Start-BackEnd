@@ -22,8 +22,9 @@ func TestEncryptDecryptMessage(t *testing.T) {
 	encrypted, err := EncryptMessage(key, message)
 	require.Nil(t, err)
 	require.Regexp(t, isBase64, encrypted)
-
-	decrypted, err := DecryptMessage(key, encrypted)
+	message2 := "b/aX4B3CUPyghAIBxcpiBpJHcYE="
+	decrypted, err := DecryptMessage(key, message2)
+	fmt.Println(decrypted)
 	fmt.Println(decrypted)	
 	require.Nil(t, err)
 	require.Equal(t, message, decrypted)

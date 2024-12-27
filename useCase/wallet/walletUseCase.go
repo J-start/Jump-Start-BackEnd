@@ -91,11 +91,11 @@ func (uc *WalletUseCase) FindIdWallet(id int) (int, error) {
 
 func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entities.WalletDatas, error) {
 
-	// idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	// if err != nil {
-	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
-	// }
-	const ID_INVESTOR = 2
+	//  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
+	//  if err != nil {
+	//  	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
+	//  }
+	const idInvestor = 2
 	balanceChan := make(chan struct {
 		result float64
 		err    error
@@ -106,7 +106,7 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 	})
 
 	go func() {
-		balance, err := uc.repo.FindBalanceInvestor(ID_INVESTOR)
+		balance, err := uc.repo.FindBalanceInvestor(idInvestor)
 		balanceChan <- struct {
 			result float64
 			err    error
@@ -114,7 +114,7 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 	}()
 
 	go func() {
-		assets, err := uc.repo.SearchDatasWallet(ID_INVESTOR)
+		assets, err := uc.repo.SearchDatasWallet(idInvestor)
 		assetsChan <- struct {
 			result []entities.Asset
 			err    error
@@ -145,17 +145,17 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 
 func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int) ([]entities.WalletOperation, error) {
 
-	// idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	// if err != nil {
-	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
-	// }
-	const ID_USER = 2
+	//  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
+	//  if err != nil {
+	//  	return []entities.WalletOperation{}, errors.New("token inválido, realize o login novamente")
+	//  }
+	const idInvestor = 2
 
 	if offset < 0 {
 		return []entities.WalletOperation{}, errors.New("offset deve ser maior ou igual a 0")
 	}
 
-	operations, err := uc.repo.FetchDatasWalletOperation(ID_USER, offset)
+	operations, err := uc.repo.FetchDatasWalletOperation(idInvestor, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -164,12 +164,12 @@ func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int)
 }
 
 func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (int, string) {
-	// idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	// if err != nil {
-	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
-	// }
-	const ID_INVESTOR = 2
-	balance , err := uc.isInvestorValid(ID_INVESTOR)
+	//  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
+	//  if err != nil {
+	//  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
+	//  }
+	const idInvestor = 2
+	balance , err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"
 	}
@@ -185,14 +185,14 @@ func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (in
 	}
 	balance -= operation.Value
 
-	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(ID_INVESTOR, balance,repositoryService)
+	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(idInvestor, balance,repositoryService)
 	if errUpdateBalance != nil {
 		repositoryService.Rollback()
 		return http.StatusBadRequest, "erro ao atualizar saldo"
 	}
 
 	dateMysql := convertDateToMysql()
-	errInsert := uc.repo.InsertOperationWallet("WITHDRAW", operation.Value,dateMysql, ID_INVESTOR, repositoryService)
+	errInsert := uc.repo.InsertOperationWallet("WITHDRAW", operation.Value,dateMysql, idInvestor, repositoryService)
 	if errInsert != nil {
 		repositoryService.Rollback()
 		return http.StatusBadRequest, "erro ao concluir operação, tente novamente"
@@ -209,17 +209,17 @@ func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (in
 }
 
 func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int, string) {
-	// idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	// if err != nil {
-	// 	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
-	// }
-	const ID_INVESTOR = 2
-	balance , err := uc.isInvestorValid(ID_INVESTOR)
+	//  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
+	//  if err != nil {
+	//  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
+	//  }
+	const idInvestor = 2
+	balance , err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"
 	}
 
-	balanceDay , errBalanceDay := uc.repo.FetchDayDeposits(ID_INVESTOR)
+	balanceDay , errBalanceDay := uc.repo.FetchDayDeposits(idInvestor)
 	if errBalanceDay != nil {
 		return http.StatusBadRequest, "erro ao processar requisição, tente novamente"
 	}
@@ -238,14 +238,14 @@ func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int
 	}
 	balance += operation.Value
 
-	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(ID_INVESTOR, balance,repositoryService)
+	errUpdateBalance := uc.repo.UpdateBalanceFromOperation(idInvestor, balance,repositoryService)
 	if errUpdateBalance != nil {
 		repositoryService.Rollback()
 		return http.StatusBadRequest, "erro ao atualizar saldo"
 	}
 
 	dateMysql := convertDateToMysql()
-	errInsert := uc.repo.InsertOperationWallet("DEPOSIT", operation.Value,dateMysql, ID_INVESTOR, repositoryService)
+	errInsert := uc.repo.InsertOperationWallet("DEPOSIT", operation.Value,dateMysql, idInvestor, repositoryService)
 	if errInsert != nil {
 		repositoryService.Rollback()
 		return http.StatusBadRequest, "erro ao concluir operação, tente novamente"

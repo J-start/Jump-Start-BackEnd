@@ -21,7 +21,6 @@ func (uc *NewsUseCase) FindAllNews(offset int) ([]entities.NewsStructure, error)
 	if offset < 0 {
 		return []entities.NewsStructure{}, errors.New("offset deve ser maior ou igual a 0")
 	}
-
 	numberNewsAvailable, errNumberNews := uc.repo.FetchNumberNewsToday()
 	if errNumberNews != nil {
 		return []entities.NewsStructure{}, errNumberNews

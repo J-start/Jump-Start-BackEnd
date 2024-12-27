@@ -31,7 +31,13 @@ func (oac *OperationAssetController) FetchHistoryOperationInvestor(w http.Respon
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
-
+  
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+	
 	var assetOperation entities.BodyAssetOperation
 
 	err := json.NewDecoder(r.Body).Decode(&assetOperation)
@@ -39,6 +45,9 @@ func (oac *OperationAssetController) FetchHistoryOperationInvestor(w http.Respon
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
 		return
 	}
+
+	assetOperation.TokenInvestor = token
+
 
 	response,err := oac.useCase.FetchAssetHistoryByInvestor(assetOperation.TokenInvestor,assetOperation.OffSet)
 	if err != nil {

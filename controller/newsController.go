@@ -47,7 +47,6 @@ func (nc *NewsController) FetchNews(w http.ResponseWriter, r *http.Request) {
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, err.Error())
 		return
 	}
-
 	json.NewEncoder(w).Encode(assetOperation)
 
 		
@@ -67,6 +66,12 @@ func (nc *NewsController) DeleteNews(w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Content-Type", "application/json")
 
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+
 	var datasOperation entities.NewsDelete
 
 	err := json.NewDecoder(r.Body).Decode(&datasOperation)
@@ -74,6 +79,7 @@ func (nc *NewsController) DeleteNews(w http.ResponseWriter, r *http.Request) {
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errors.New("corpo da requisição inconsistente").Error())
 		return
 	}
+	datasOperation.TokenInvestor = token
 	message := nc.useCase.DeleteNews(datasOperation.IdNews,datasOperation.TokenInvestor)
 	if message != nil {
 		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, message.Error())

@@ -44,11 +44,11 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 		return http.StatusNotAcceptable,err.Error()
 	}
 	 idInvestor := 2
-	// idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
-	// if err != nil {
-	// 	repositoryService.Rollback()
-	// 	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
-	// }
+	//  idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
+	//  if err != nil {
+	//  	repositoryService.Rollback()
+	//  	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
+	//  }
 
 	if err := uc.VerifyIfInvestorCanSell(assetOperation,idInvestor); err != nil {
 		return http.StatusNotAcceptable,err.Error()
@@ -137,7 +137,6 @@ func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.Asse
 
 func (uc *SellAssetUseCase) getAssetValue(assetOperation entities.AssetOperation) (float64, error) {
 	if assetOperation.AssetType == "SHARE" {
-		fmt.Println(utils.IsActionTradable(time.Now()))
 		if !utils.IsActionTradable(time.Now()) {
 			return 0, errors.New("mercado fechado")
 		}

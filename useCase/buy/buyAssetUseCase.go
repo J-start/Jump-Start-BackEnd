@@ -56,11 +56,11 @@ func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int
 		return http.StatusNotAcceptable, err.Error()
 	}
 	idInvestor := 2
-	// idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
-	// if err != nil {
-	// 	repositoryService.Rollback()
-	// 	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
-	// }
+	//  idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
+	//  if err != nil {
+	//  	repositoryService.Rollback()
+	//  	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
+	//  }
 
 	if err := uc.executeOperation(assetOperation,idInvestor,value,repositoryService); err != nil {
 		repositoryService.Rollback()

@@ -105,6 +105,7 @@ func (ic *InvestorController) SendCodeEmailRecoverPassword(w http.ResponseWriter
 		return
 	}
 
+
 	errA := ic.useCase.SendCodeToRecoverPassword(investor.Email)
 	if errA != nil {
 		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errA.Error())
