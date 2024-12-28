@@ -17,6 +17,7 @@ import (
 	"jumpStart-backEnd/useCase/sell"
 	"jumpStart-backEnd/useCase/wallet"
 	"jumpStart-backEnd/repository/share_repository"
+	"jumpStart-backEnd/repository/news_repository"
 	"log"
 	"net/http"
 )
@@ -31,7 +32,7 @@ func main() {
 	assetWalletRepository := repository.NewWalletAssetRepository(db)
 	serviceRepository := servicerepository.NewWServiceRepository(db)
 	listAssetRepository := repository.NewListAssetRepository(db)
-	newsRepository := repository.NewNewsRepository(db)
+	newsRepository := news_repository.NewNewsRepository(db)
 	investorRepository := investor_repository.NewInvestorRepository(db)
 
 	investorService := investor_service.NewInvestorService(investorRepository)

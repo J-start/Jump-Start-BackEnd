@@ -3,16 +3,16 @@ package news
 import (
 	"errors"
 	"jumpStart-backEnd/entities"
-	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/news_repository"
 	"jumpStart-backEnd/service/investor_service"
 )
 
 type NewsUseCase struct {
-	repo            *repository.NewsRepository
+	repo            *news_repository.NewsRepository
 	investorService *investor_service.InvestorService
 }
 
-func NewNewsUseCase(repo *repository.NewsRepository, investorService *investor_service.InvestorService) *NewsUseCase {
+func NewNewsUseCase(repo *news_repository.NewsRepository, investorService *investor_service.InvestorService) *NewsUseCase {
 	return &NewsUseCase{repo: repo, investorService: investorService}
 }
 

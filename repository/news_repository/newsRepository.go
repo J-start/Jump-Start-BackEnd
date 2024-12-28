@@ -1,4 +1,4 @@
-package repository
+package news_repository
 
 import (
 	"database/sql"
