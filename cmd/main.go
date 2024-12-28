@@ -4,6 +4,7 @@ import (
 	"jumpStart-backEnd/controller"
 	"jumpStart-backEnd/db"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/investor_repository"
 	"jumpStart-backEnd/service/investor_service"
 	"jumpStart-backEnd/serviceRepository"
 	"jumpStart-backEnd/useCase"
@@ -15,6 +16,7 @@ import (
 	"jumpStart-backEnd/useCase/operation"
 	"jumpStart-backEnd/useCase/sell"
 	"jumpStart-backEnd/useCase/wallet"
+	"jumpStart-backEnd/repository/share_repository"
 	"log"
 	"net/http"
 )
@@ -23,14 +25,14 @@ func main() {
 
 	db := db.GetDB()
 
-	shareRepository := repository.NewShareRepository(db)
+	shareRepository := share_repository.NewShareRepository(db)
 	walletRepository := repository.NewWalletRepository(db)
 	operationAssetRepository := repository.NewOperationAssetRepository(db)
 	assetWalletRepository := repository.NewWalletAssetRepository(db)
 	serviceRepository := servicerepository.NewWServiceRepository(db)
 	listAssetRepository := repository.NewListAssetRepository(db)
 	newsRepository := repository.NewNewsRepository(db)
-	investorRepository := repository.NewInvestorRepository(db)
+	investorRepository := investor_repository.NewInvestorRepository(db)
 
 	investorService := investor_service.NewInvestorService(investorRepository)
 

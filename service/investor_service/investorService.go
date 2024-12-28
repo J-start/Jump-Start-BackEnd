@@ -2,17 +2,17 @@ package investor_service
 
 import (
 	"errors"
-	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/investor_repository"
 	"jumpStart-backEnd/security/jwt_security"
 	
 )
 
 
 type InvestorService struct {
-	repo *repository.InvestorRepository
+	repo *investor_repository.InvestorRepository
 }
 
-func NewInvestorService(repo *repository.InvestorRepository) *InvestorService {
+func NewInvestorService(repo *investor_repository.InvestorRepository) *InvestorService {
 	return &InvestorService{repo: repo}
 }
 

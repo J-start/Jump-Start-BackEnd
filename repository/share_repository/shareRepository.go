@@ -1,4 +1,4 @@
-package repository
+package share_repository
 
 import (
 	"database/sql"

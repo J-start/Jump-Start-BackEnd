@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
-	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/investor_repository"
 	"jumpStart-backEnd/security/encryption"
 	"jumpStart-backEnd/security/jwt_security"
 	 "jumpStart-backEnd/serviceRepository"
@@ -19,12 +19,12 @@ import (
 )
 
 type InvestorUseCase struct {
-	repo *repository.InvestorRepository
+	repo *investor_repository.InvestorRepository
 	walletUseCase  *wallet.WalletUseCase
 	repositoryService *servicerepository.ServiceRepository
 }
 
-func NewInvestorUseCase(repo *repository.InvestorRepository,walletUseCase  *wallet.WalletUseCase,repositoryService *servicerepository.ServiceRepository) *InvestorUseCase {
+func NewInvestorUseCase(repo *investor_repository.InvestorRepository,walletUseCase  *wallet.WalletUseCase,repositoryService *servicerepository.ServiceRepository) *InvestorUseCase {
 	return &InvestorUseCase{repo: repo,walletUseCase:walletUseCase,repositoryService:repositoryService}
 }
 

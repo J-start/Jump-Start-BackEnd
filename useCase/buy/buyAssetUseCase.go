@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
-	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/share_repository"
 	"jumpStart-backEnd/service/investor_service"
 	"jumpStart-backEnd/serviceRepository"
 	"jumpStart-backEnd/useCase"
@@ -20,7 +20,7 @@ import (
 )
 
 type BuyAssetUseCase struct {
-	repo                     *repository.ShareRepository
+	repo                     *share_repository.ShareRepository
 	shareUseCase             *usecase.ShareUseCase
 	walletUseCase            *wallet.WalletUseCase
 	operationAssetUseCase    *operation.OperationAssetUseCase
@@ -29,7 +29,7 @@ type BuyAssetUseCase struct {
 	investorService          *investor_service.InvestorService
 }
 
-func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase,assetWalletUseCase *assetwallet.AssetWalletUseCase, repositoryService  *servicerepository.ServiceRepository,investorService *investor_service.InvestorService) *BuyAssetUseCase {
+func NewBuyAssetsUseCase(repo *share_repository.ShareRepository, shareUseCase *usecase.ShareUseCase, walletUseCase *wallet.WalletUseCase, operationAssetUseCase *operation.OperationAssetUseCase,assetWalletUseCase *assetwallet.AssetWalletUseCase, repositoryService  *servicerepository.ServiceRepository,investorService *investor_service.InvestorService) *BuyAssetUseCase {
 	return &BuyAssetUseCase{repo: repo, 
 							shareUseCase: shareUseCase, 
 							walletUseCase: walletUseCase, 

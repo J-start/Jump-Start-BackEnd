@@ -1,5 +1,9 @@
 @echo off
 
+set CAMINHO_TESTES=%1
+echo O valor do parâmetro 1 é: %CAMINHO_TESTES%
+pause
+
 docker-compose down -v
 
 docker-compose -f docker-compose.test.yaml up -d
@@ -25,6 +29,8 @@ timeout /t 10 >nul
 
 echo Container %CONTAINER_NAME% está pronto. Executando os testes...
 
-go test ./...
+cd %CAMINHO_TESTES%
+
+go test 
 
 docker-compose down -v

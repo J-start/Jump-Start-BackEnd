@@ -3,17 +3,17 @@ package usecase
 import (
 	"errors"
 	"jumpStart-backEnd/entities"
-	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/repository/share_repository"
 	"log"
 	"strings"
 )
 
 type ShareUseCase struct {
-	repo *repository.ShareRepository
+	repo *share_repository.ShareRepository
 
 }
 
-func NewShareUseCase(repo *repository.ShareRepository) *ShareUseCase {
+func NewShareUseCase(repo *share_repository.ShareRepository) *ShareUseCase {
 	return &ShareUseCase{repo: repo}
 }
 

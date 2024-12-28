@@ -1,4 +1,4 @@
-package repository
+package investor_repository
 
 import (
 	"database/sql"
