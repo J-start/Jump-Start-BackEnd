@@ -18,18 +18,10 @@ func NewNewsRepository(db *sql.DB) *NewsRepository {
 	return &NewsRepository{db: db}
 }
 
-func (repo *NewsRepository) FetchNumberNewsToday() (int,error){
-	var newsToday int
-	err := repo.db.QueryRow(`SELECT COUNT(id) AS contagem FROM tb_news WHERE dateNews = DATE_FORMAT(NOW(),"%Y,%m,%d")`).Scan(&newsToday)
-	if err != nil {
-		return 0,err
-	}
 
-	return newsToday,nil
-}
-
-func (repo *NewsRepository) FindAllNews(dateQuery string) ([]entities.NewsStructure, error) {
-	query := fmt.Sprintf("SELECT id,news,datePublished FROM tb_news WHERE dateNews = DATE_FORMAT('%s', '%%Y,%%m,%%d') AND isApproved = 1 LIMIT 12", dateQuery)
+func (repo *NewsRepository) FindAllNews(offset int) ([]entities.NewsStructure, error) {
+	offset *= 10
+	query := fmt.Sprintf("SELECT id,news,datePublished FROM tb_news ORDER BY dateNews DESC LIMIT 10 OFFSET %d", offset)
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return []entities.NewsStructure{}, err
@@ -62,5 +54,17 @@ func (repo *NewsRepository) DeleteNews(idNews int) error {
 	}
 
 	return nil
+
+}
+
+
+func (repo *NewsRepository) GetDateLastNews() (string,error) {
+	var date time.Time
+	err := repo.db.QueryRow(`SELECT dateNews FROM tb_news ORDER BY dateNews DESC LIMIT 1`).Scan(&date)
+	if 	err != nil {
+		return "",err
+	}
+
+	return date.Format("2006-01-02"),nil
 
 }

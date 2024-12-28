@@ -5,7 +5,6 @@ import (
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/service/investor_service"
-	"time"
 )
 
 type NewsUseCase struct {
@@ -21,22 +20,9 @@ func (uc *NewsUseCase) FindAllNews(offset int) ([]entities.NewsStructure, error)
 	if offset < 0 {
 		return []entities.NewsStructure{}, errors.New("offset deve ser maior ou igual a 0")
 	}
-	numberNewsAvailable, errNumberNews := uc.repo.FetchNumberNewsToday()
-	if errNumberNews != nil {
-		return []entities.NewsStructure{}, errNumberNews
-	}
-	dateQuery := createDateQuery(0)
-	if numberNewsAvailable == 0 {
-		dateQuery = createDateQuery(-24)
-	}
 
-	if numberNewsAvailable == 0 && offset > 0 {
-		dateQuery = createDateQuery(-24 * (offset + 1))
-	} else if numberNewsAvailable > 0 && offset > 0 {
-		dateQuery = createDateQuery(-24 * offset)
-	}
 
-	newsList, err := uc.repo.FindAllNews(dateQuery)
+	newsList, err := uc.repo.FindAllNews(offset)
 	if err != nil {
 		return []entities.NewsStructure{}, errors.New("erro ao buscar noticias")
 	}
@@ -65,8 +51,4 @@ func (uc *NewsUseCase) DeleteNews(idNews int, tokenInvestor string) error {
 	return nil
 }
 
-func createDateQuery(rangeNews int) string {
-	currentDate := time.Now()
-	yesterday := currentDate.Add(time.Duration(rangeNews) * time.Hour)
-	return yesterday.Format("2006-01-02")
-}
+
