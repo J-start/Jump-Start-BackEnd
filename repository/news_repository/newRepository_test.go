@@ -2,7 +2,6 @@ package news_repository
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -66,19 +65,19 @@ func TestFindAllSharesWithOffSet(t *testing.T) {
 	}
 	_, err = db.Exec(`
 		INSERT INTO tb_news (id,news,dateNews,datePublished,isApproved) VALUES
-			(1,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-23','2024-12-19', 1),
-    		(2,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-23','2024-12-19', 1),
-    		(3,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-23','2024-12-19', 1),
-			(4,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-23','2024-12-19', 1),
-    		(5,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-23','2024-12-19', 1),
-    		(6,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-23','2024-12-19', 1),
-    		(7,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-23','2024-12-19', 1),
-			(8,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-23','2024-12-19', 1),
-			(9,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-23','2024-12-19', 1),
-			(10,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-23','2024-12-19', 1),
-    		(11,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-24','2024-12-19', 1),
-    		(12,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-24','2024-12-19', 1),
-    		(13,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-24','2024-12-19', 1);
+			(1,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-24','2024-12-19', 1),
+    		(2,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-24','2024-12-19', 1),
+    		(3,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-24','2024-12-19', 1),
+			(4,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-24','2024-12-19', 1),
+    		(5,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-24','2024-12-19', 1),
+    		(6,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-24','2024-12-19', 1),
+    		(7,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-24','2024-12-19', 1),
+			(8,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-24','2024-12-19', 1),
+			(9,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-24','2024-12-19', 1),
+			(10,'{"SHARE": {"description": "descricao1", "url": "url1"}}', '2024-12-24','2024-12-19', 1),
+    		(11,'{"COIN": {"description": "descricao2", "url": "url2"}}', '2024-12-23','2024-12-19', 1),
+    		(12,'{"CRYPTO": {"description": "descricao3", "url": "url3"}}', '2024-12-23','2024-12-19', 1),
+    		(13,'{"SHARE": {"description": "descricao4", "url": "url4"}}', '2024-12-23','2024-12-19', 1);
     		
 	`)
 	if err != nil {
@@ -88,7 +87,6 @@ func TestFindAllSharesWithOffSet(t *testing.T) {
 
 	repo := NewNewsRepository(db)
 	listNews, err := repo.FindAllNews(1)
-	fmt.Println(listNews)
 	assert.NoError(t, err)
 	assert.Equal(t, len(listNews), 3) 
 	assert.Equal(t,listNews[0].Id, 11)
