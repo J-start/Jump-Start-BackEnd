@@ -57,6 +57,15 @@ func ValidateFields(assetOperation entities.AssetOperation) error{
 		return errors.New("quantidade de ativos inválida")
 	}
 
+	if assetOperation.AssetAmount != float64(int(assetOperation.AssetAmount)) {
+		return errors.New("quantidade de ações deve ser um valor inteiro")
+	}
+
+	if assetOperation.AssetAmount != float64(int(assetOperation.AssetAmount)) {
+		return errors.New("quantidade de ações deve ser um valor inteiro")
+	}
+	
+
 	if assetOperation.AssetType != "CRYPTO" && assetOperation.AssetType != "COIN" && assetOperation.AssetType != "SHARE" {
 		return errors.New("tipo de ativo inválido")
 	}

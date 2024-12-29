@@ -34,10 +34,9 @@ func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecas
 }
 
 func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (int, string) {
-	if assetOperation.AssetType == "SHARE" {
-		if !utils.IsActionTradable(time.Now()) {
-			return http.StatusInternalServerError, errors.New("mercado fechado").Error()
-		}
+
+	if err := uc.validateSellAssetInput(assetOperation); err != nil {
+		return http.StatusNotAcceptable,err.Error()
 	}
 	repositoryService,err := uc.repositoryService.StartTransaction()
 
@@ -45,9 +44,7 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
 	}
 
-	if err := uc.validateSellAssetInput(assetOperation); err != nil {
-		return http.StatusNotAcceptable,err.Error()
-	}
+
 	 idInvestor := 2
 	//  idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
 	//  if err != nil {
@@ -190,6 +187,11 @@ func (uc *SellAssetUseCase) isAssetValid(code string) error {
 }
 
 func (uc *SellAssetUseCase) validateSellAssetInput(assetOperation entities.AssetOperation) error {
+	if assetOperation.AssetType == "SHARE" {
+		if !utils.IsActionTradable(time.Now()) {
+			return errors.New("mercado fechado")
+		}
+	}
 	if err := utils.ValidateFields(assetOperation); err != nil {
 		return err
 	}

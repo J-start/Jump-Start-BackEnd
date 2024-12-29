@@ -41,18 +41,14 @@ func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase
 }
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
-	if assetOperation.AssetType == "SHARE" {
-		if !utils.IsActionTradable(time.Now()) {
-			return http.StatusInternalServerError, errors.New("mercado fechado").Error()
-		}
-	}
-	repositoryService,err := uc.repositoryService.StartTransaction()
-	if err != nil {
-		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
-	}
 
 	if err := uc.validateBuyAssetInput(assetOperation); err != nil {
 		return http.StatusNotAcceptable, err.Error()
+	}
+
+	repositoryService,err := uc.repositoryService.StartTransaction()
+	if err != nil {
+		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
 	}
 
 	value, err := uc.getAssetValue(assetOperation)
@@ -170,6 +166,11 @@ func (uc *BuyAssetUseCase) getAssetValue(assetOperation entities.AssetOperation)
 }
 
 func (uc *BuyAssetUseCase) validateBuyAssetInput(assetOperation entities.AssetOperation) error {
+	if assetOperation.AssetType == "SHARE" {
+		if !utils.IsActionTradable(time.Now()) {
+			return errors.New("mercado fechado")
+		}
+	}
 	if err := utils.ValidateFields(assetOperation); err != nil {
 		return err
 	}
