@@ -34,6 +34,11 @@ func NewSellAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecas
 }
 
 func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (int, string) {
+	if assetOperation.AssetType == "SHARE" {
+		if !utils.IsActionTradable(time.Now()) {
+			return http.StatusInternalServerError, errors.New("mercado fechado").Error()
+		}
+	}
 	repositoryService,err := uc.repositoryService.StartTransaction()
 
 	if err != nil {
