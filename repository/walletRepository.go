@@ -184,7 +184,7 @@ func (wr *WalletRepository) SearchBalanceInvestor(idInvestor int) (float64, erro
 
 func (wr *WalletRepository) FetchDatasWalletOperation(idInvestor, offset int) ([]entities.WalletOperation, error) {
 	offset *= 20
-	query := fmt.Sprintf(`SELECT operationType,operationValue,operationDate FROM tb_walletOperation WHERE idInvestor = %d LIMIT 20 OFFSET %d`, idInvestor,offset)
+	query := fmt.Sprintf(`SELECT operationType,operationValue,operationDate FROM tb_walletOperation WHERE idInvestor = %d ORDER BY operationDate DESC LIMIT 20 OFFSET %d`, idInvestor,offset)
     rows, err := wr.db.Query(query)
 
 	if err != nil {
@@ -268,7 +268,7 @@ func buildoperationWallet(rows *sql.Rows) ([]entities.WalletOperation, error) {
 		if err != nil {
 			return nil, err
 		}
-		operation.DperationDate = date.Format("02-01-2006")
+		operation.OperationDate = date.Format("02-01-2006")
 		operationsWallet = append(operationsWallet, operation)
 
 	}

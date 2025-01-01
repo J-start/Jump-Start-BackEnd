@@ -191,6 +191,9 @@ func (uc *SellAssetUseCase) validateSellAssetInput(assetOperation entities.Asset
 		if !utils.IsActionTradable(time.Now()) {
 			return errors.New("mercado fechado")
 		}
+		if assetOperation.AssetAmount != float64(int(assetOperation.AssetAmount)) {
+			return errors.New("quantidade de ações deve ser um valor inteiro")
+		}
 	}
 	if err := utils.ValidateFields(assetOperation); err != nil {
 		return err

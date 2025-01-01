@@ -41,8 +41,8 @@ func NewBuyAssetsUseCase(repo *repository.ShareRepository, shareUseCase *usecase
 }
 
 func (uc *BuyAssetUseCase) BuyAsset(assetOperation entities.AssetOperation) (int, string) {
-
 	if err := uc.validateBuyAssetInput(assetOperation); err != nil {
+		fmt.Println(err)
 		return http.StatusNotAcceptable, err.Error()
 	}
 
@@ -169,6 +169,9 @@ func (uc *BuyAssetUseCase) validateBuyAssetInput(assetOperation entities.AssetOp
 	if assetOperation.AssetType == "SHARE" {
 		if !utils.IsActionTradable(time.Now()) {
 			return errors.New("mercado fechado")
+		}
+		if assetOperation.AssetAmount != float64(int(assetOperation.AssetAmount)) {
+			return errors.New("quantidade de ações deve ser um valor inteiro")
 		}
 	}
 	if err := utils.ValidateFields(assetOperation); err != nil {

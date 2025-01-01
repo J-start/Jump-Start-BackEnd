@@ -24,7 +24,7 @@ type WalletDatas struct {
 type WalletOperation struct {
 	OperationType  string
 	OperationValue float64
-	DperationDate  string
+	OperationDate  string
 }
 
 type WalletOperationInsert struct {	
