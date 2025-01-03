@@ -202,10 +202,11 @@ func (iu *InvestorUseCase) VerifyCode(email, code, newPassword string) error {
 }
 
 func (iu *InvestorUseCase) NameAndBalanceInvestor(token string) (entities.BalanceEmailInvestor, error) {
-	idInvestor, err := iu.investorService.GetIdByToken(token)
-	if err != nil {
-		return entities.BalanceEmailInvestor{}, errors.New("token inválido, realize o login novamente")
-	}
+	// idInvestor, err := iu.investorService.GetIdByToken(token)
+	// if err != nil {
+	// 	return entities.BalanceEmailInvestor{}, errors.New("token inválido, realize o login novamente")
+	// }
+	idInvestor := 2
 	datas, errDb := iu.repo.FetchInvestorEmailAndBalance(idInvestor)
 	if errDb != nil {
 		return entities.BalanceEmailInvestor{}, errors.New("erro ao buscar dados do investidor")
