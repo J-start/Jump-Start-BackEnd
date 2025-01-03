@@ -24,3 +24,8 @@ type CodeChangePassword struct {
 	Code string `json:"code"`
 	NewPassword string `json:"newPassword"`
 }
+
+type BalanceEmailInvestor struct {
+	Name string `json:"name"`
+	Balance string `json:"balance"`
+}

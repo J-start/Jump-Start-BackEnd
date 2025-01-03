@@ -40,7 +40,7 @@ func main() {
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
 	operationAssetUseCase := operation.NewOperationAssetUseCase(operationAssetRepository,investorService)
 	walletUseCase := wallet.NewWalletUseCase(walletRepository,operationAssetUseCase,serviceRepository,investorService)
-	investorUseCase := investor.NewInvestorUseCase(investorRepository,walletUseCase,serviceRepository)
+	investorUseCase := investor.NewInvestorUseCase(investorRepository,walletUseCase,serviceRepository,investorService)
 	shareUsecase := usecase.NewShareUseCase(shareRepository)
 	newBuyAssetsUseCase := buy.NewBuyAssetsUseCase(shareRepository, shareUsecase, walletUseCase, 
 													  operationAssetUseCase,assetWalletUseCase,serviceRepository,investorService)
@@ -75,6 +75,7 @@ func main() {
 	http.HandleFunc("/investor/login/", investorController.Login)
 	http.HandleFunc("/investor/password/code/", investorController.SendCodeEmailRecoverPassword)
 	http.HandleFunc("/investor/password/update/", investorController.VerifyCodeEmail)
+	http.HandleFunc("/investor/name/", investorController.GetNameAndBalance)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

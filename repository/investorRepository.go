@@ -171,3 +171,18 @@ func (ir *InvestorRepository) ChangeAccountStatusInvestor(isAccountValid bool,id
 	}
 	return nil
 }
+
+func (ir *InvestorRepository) FetchInvestorEmailAndBalance(id int) (entities.BalanceEmailInvestor, error) {
+	var datas entities.BalanceEmailInvestor
+	query := fmt.Sprintf(`SELECT ti.investorName,tw.balance FROM tb_wallet AS tw INNER JOIN tb_investor AS ti ON ti.idInvestor = tw.idInvestor WHERE ti.idInvestor = %d; `, id)
+	err := ir.db.QueryRow(query).Scan(&datas.Name, &datas.Balance)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return entities.BalanceEmailInvestor{}, errors.New("investidor não encontrado")
+		}
+		return entities.BalanceEmailInvestor{}, err
+	}
+
+	return datas, nil
+}

@@ -148,3 +148,33 @@ func (ic *InvestorController) VerifyCodeEmail(w http.ResponseWriter, r *http.Req
 	handleError.WriteHTTPStatus(w, http.StatusOK, "Sucesso!")
 
 }
+
+func (ic *InvestorController) GetNameAndBalance(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+
+	datas,errB := ic.useCase.NameAndBalanceInvestor(token)
+	if errB != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errB.Error())
+		return
+	}
+	json.NewEncoder(w).Encode(datas)
+
+}

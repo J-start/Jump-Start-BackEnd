@@ -9,23 +9,26 @@ import (
 	"jumpStart-backEnd/repository"
 	"jumpStart-backEnd/security/encryption"
 	"jumpStart-backEnd/security/jwt_security"
-	 "jumpStart-backEnd/serviceRepository"
-	"jumpStart-backEnd/useCase/wallet"
 	"jumpStart-backEnd/service/email_service"
+	"jumpStart-backEnd/service/investor_service"
+	"jumpStart-backEnd/serviceRepository"
+	"jumpStart-backEnd/useCase/wallet"
 	"net/mail"
 	"os"
 	"strings"
+
 	"github.com/joho/godotenv"
 )
 
 type InvestorUseCase struct {
-	repo *repository.InvestorRepository
-	walletUseCase  *wallet.WalletUseCase
+	repo              *repository.InvestorRepository
+	walletUseCase     *wallet.WalletUseCase
 	repositoryService *servicerepository.ServiceRepository
+	investorService   *investor_service.InvestorService
 }
 
-func NewInvestorUseCase(repo *repository.InvestorRepository,walletUseCase  *wallet.WalletUseCase,repositoryService *servicerepository.ServiceRepository) *InvestorUseCase {
-	return &InvestorUseCase{repo: repo,walletUseCase:walletUseCase,repositoryService:repositoryService}
+func NewInvestorUseCase(repo *repository.InvestorRepository, walletUseCase *wallet.WalletUseCase, repositoryService *servicerepository.ServiceRepository, investorService *investor_service.InvestorService) *InvestorUseCase {
+	return &InvestorUseCase{repo: repo, walletUseCase: walletUseCase, repositoryService: repositoryService, investorService: investorService}
 }
 
 func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) error {
@@ -44,18 +47,18 @@ func (iu *InvestorUseCase) CreateInvestor(investor entities.InvestorInsert) erro
 		return err
 	}
 
-	repositoryService,err := iu.repositoryService.StartTransaction()
+	repositoryService, err := iu.repositoryService.StartTransaction()
 	if err != nil {
 		return errors.New("erro ao processar requisição, tente novamente")
 	}
 
-	id,errCreate := iu.repo.CreateInvestorDB(investor.Name, investor.Email, encryptedPassword,repositoryService)
+	id, errCreate := iu.repo.CreateInvestorDB(investor.Name, investor.Email, encryptedPassword, repositoryService)
 	if errCreate != nil {
 		repositoryService.Rollback()
 		return errCreate
 	}
 
-	errWallet := iu.walletUseCase.CreateWallet(id,repositoryService)
+	errWallet := iu.walletUseCase.CreateWallet(id, repositoryService)
 	if errWallet != nil {
 		repositoryService.Rollback()
 		return errWallet
@@ -109,93 +112,105 @@ func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entit
 }
 
 func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
-	_,errEmailDB := iu.repo.IsEmailExists(email)
+	_, errEmailDB := iu.repo.IsEmailExists(email)
 	if errEmailDB != nil {
 		if errEmailDB.Error() == "e-mail não encontrado" {
 			return errors.New("email não encontrado")
-		}else{
+		} else {
 			return errors.New("ocoreu um erro, tente novamente")
 		}
 	}
-	if !isEmailValid(email){
+	if !isEmailValid(email) {
 		return errors.New("email invalido")
 	}
-	code,errCode := generateRandomString(3)
+	code, errCode := generateRandomString(3)
 	if errCode != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errCode.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errCode.Error())
 	}
 
-	credentials,errCredentials := recoverCredentialsEmail()
+	credentials, errCredentials := recoverCredentialsEmail()
 	if errCredentials != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errCredentials.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errCredentials.Error())
 	}
 
-	bodyEmail := "Código para recuperação: "+ code
-    
-	key,errKey := getKeyEncryption()
+	bodyEmail := "Código para recuperação: " + code
+
+	key, errKey := getKeyEncryption()
 	if errKey != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errKey.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errKey.Error())
 	}
 
-	codeEncryption,errCrypto := encryption.EncryptMessage(key,code)
-	if errCrypto != nil{
-		return errors.New("ocoreu um erro, tente novamente"+errCrypto.Error())
+	codeEncryption, errCrypto := encryption.EncryptMessage(key, code)
+	if errCrypto != nil {
+		return errors.New("ocoreu um erro, tente novamente" + errCrypto.Error())
 	}
 
-	errUpdate := iu.repo.UpdateCodeInvestor(email,codeEncryption)
+	errUpdate := iu.repo.UpdateCodeInvestor(email, codeEncryption)
 	if errUpdate != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errUpdate.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errUpdate.Error())
 	}
 
-	errEmail := email_service.SendEmail(email,credentials[0],credentials[1],"Jump start - Código recuperação de senha",bodyEmail)
+	errEmail := email_service.SendEmail(email, credentials[0], credentials[1], "Jump start - Código recuperação de senha", bodyEmail)
 	if errEmail != nil {
 		return errors.New("ocoreu um erro, tente novamente")
 	}
 	return nil
 }
 
-func (iu *InvestorUseCase) VerifyCode(email,code,newPassword string) error {
-	_,errEmailDB := iu.repo.IsEmailExists(email)
+func (iu *InvestorUseCase) VerifyCode(email, code, newPassword string) error {
+	_, errEmailDB := iu.repo.IsEmailExists(email)
 	if errEmailDB != nil {
 		if errEmailDB.Error() == "e-mail não encontrado" {
 			return errors.New("email não encontrado")
-		}else{
+		} else {
 			return errors.New("ocoreu um erro, tente novamente")
 		}
 	}
 
-	if !isEmailValid(email){
+	if !isEmailValid(email) {
 		return errors.New("email invalido")
 	}
 
-	codeEncrypted,errDb := iu.repo.FetchCodeInvestorByEmail(email)
+	codeEncrypted, errDb := iu.repo.FetchCodeInvestorByEmail(email)
 	if errDb != nil {
 		return errors.New("aconteceu algum erro, tente novamente")
 	}
 
-	key,errKey := getKeyEncryption()
+	key, errKey := getKeyEncryption()
 	if errKey != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errKey.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errKey.Error())
 	}
 
-	codeDescrypted, errDecryp := encryption.DecryptMessage(key,codeEncrypted)
+	codeDescrypted, errDecryp := encryption.DecryptMessage(key, codeEncrypted)
 	if errDecryp != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errDecryp.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errDecryp.Error())
 	}
 	if codeDescrypted != code {
 		return errors.New("código incorreto")
 	}
-	passwordEncrypted, errEncrypted :=  encryption.EncryptMessage(key,newPassword)
+	passwordEncrypted, errEncrypted := encryption.EncryptMessage(key, newPassword)
 	if errEncrypted != nil {
-		return errors.New("ocoreu um erro, tente novamente"+errEncrypted.Error())
+		return errors.New("ocoreu um erro, tente novamente" + errEncrypted.Error())
 	}
 
-	err := iu.repo.UpdatePasswordInvestor(email,passwordEncrypted)
+	err := iu.repo.UpdatePasswordInvestor(email, passwordEncrypted)
 	if err != nil {
-		return errors.New("ocoreu um erro, tente novamente"+err.Error())
+		return errors.New("ocoreu um erro, tente novamente" + err.Error())
 	}
 
 	return nil
+}
+
+func (iu *InvestorUseCase) NameAndBalanceInvestor(token string) (entities.BalanceEmailInvestor, error) {
+	idInvestor, err := iu.investorService.GetIdByToken(token)
+	if err != nil {
+		return entities.BalanceEmailInvestor{}, errors.New("token inválido, realize o login novamente")
+	}
+	datas, errDb := iu.repo.FetchInvestorEmailAndBalance(idInvestor)
+	if errDb != nil {
+		return entities.BalanceEmailInvestor{}, errors.New("erro ao buscar dados do investidor")
+	}
+	return datas, nil
 }
 
 func isEmailValid(email string) bool {
@@ -240,38 +255,35 @@ func getSecretyKey() []byte {
 	return jwtSecret
 }
 
-
-
-func generateRandomString(length int) (string,error) {
+func generateRandomString(length int) (string, error) {
 	b := make([]byte, length)
 	_, err := rand.Read(b)
 	if err != nil {
-	   return "",err
+		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(b),nil
- }
+	return base64.StdEncoding.EncodeToString(b), nil
+}
 
- func recoverCredentialsEmail() ([]string,error){
+func recoverCredentialsEmail() ([]string, error) {
 	err2 := godotenv.Load()
 	if err2 != nil {
-		return nil,err2
+		return nil, err2
 	}
 	PASSWORD_EMAIL := os.Getenv("PASSWORD_EMAIL")
 	ADRESS_EMAIL := os.Getenv("ADRESS_EMAIL")
-	
-	credentials := []string{ADRESS_EMAIL,PASSWORD_EMAIL}
 
-	return credentials,nil
- }
+	credentials := []string{ADRESS_EMAIL, PASSWORD_EMAIL}
 
- func getKeyEncryption() ([]byte,error) {
+	return credentials, nil
+}
+
+func getKeyEncryption() ([]byte, error) {
 	err2 := godotenv.Load()
 	if err2 != nil {
-		return nil,errors.New("ocorreu um erro")
+		return nil, errors.New("ocorreu um erro")
 	}
 	PASSWORD := os.Getenv("ENCRYPT_KEY")
 	key := []byte(PASSWORD)
 
-	return key,nil
- }
-
+	return key, nil
+}
