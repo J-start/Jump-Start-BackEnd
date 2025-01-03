@@ -245,13 +245,11 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
   {
-      "TokenUser": "string",
       "OffSet": 0     
   } 
 
 ```
-
-- TokenUser: token jwt do usuário
+ ### Obs: é necessário passar o token JWT do usuário para o Bearer 
 - offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
 
   ### Exemplo de retorno:
@@ -285,13 +283,8 @@ http://localhost:8080/sell/
   ```bash
   /wallet/datas/
   ```
- ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
-```json
-  {
-    "tokenInvestor": "string"
-  }
 
-```
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
 
 - tokenInvestor: token jwt do usuário
 
@@ -328,13 +321,13 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenUser  ": "string",
   "offset":   0
 }
 
 ```
 
-- TokenUser: token jwt do usuário
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+
 - offset: páginação do histórico, a cada incremento de 1 no offset é retornado 10 dados
 
   ### Exemplo de retorno:
@@ -371,13 +364,13 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenInvestor ": "string",
   "value":   50
 }
 
 ```
 
-- TokenUser: token jwt do usuário
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+
 - value: valor para realizar o saque, deve ser maior que 0
 
   ### Exemplo de retorno:
@@ -402,14 +395,14 @@ http://localhost:8080/sell/
  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
 {
-  "TokenInvestor ": "string",
   "value":   50
 }
 
 ```
 
-- TokenUser: token jwt do usuário
 - value: valor para realizar o saque, deve ser maior que 0
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
 
   ### Exemplo de retorno:
 ```json
@@ -419,5 +412,147 @@ http://localhost:8080/sell/
 }
   ```
 </details>
+
+
+<details>
+
+<summary>/news/</summary>
+
+  ## Método do tipo GET que busca notícias de forma paginada.
+
+  ```bash
+  /news/?offset=N
+  ```
+- offset: valor para paginação, começa em 0 e retorna até 12 notícias a cada incremento de 1
+
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "Id": 2,
+    "News": "{\"SHARE\": {\"description\": \"Onde investir em 2024: confira as melhores ações segundo o BB Investimentos  InvesTalk\", \"url\": \"https://news.google.com/rss/articles/CBMigAFBVV95cUxNMDZzQXEySGV4M3RmOTExMGIzb0tuUm5sLVQ4bnIyNnE1V0t6S1NadkRtZm5KOUoxUDlRVE5GN0FZVmo2UnpmdE9QQWZDTEJXdGtYQXUzWWl4bFNLSTlYU1pVUi1FQURqM1NwZ3NvWXo4c3k0UVZXQUtfS2ZmeGEtXw?oc=5&hl=en-US&gl=US&ceid=US:en\"}}",
+    "DateNews": "18-12-2024"
+  },
+  {
+    "Id": 3,
+    "News": "{\"COIN\": {\"description\": \"Dólar hoje: por que real é moeda que mais se desvalorizou e como será em 2025  BBC News Brasil\", \"url\": \"https://news.google.com/rss/articles/CBMiYkFVX3lxTE9iRThhVGFFSXh0YTJEZWRRUFlPU0ppSTFQRm1WRU5DMzZkRW5CM093YjVUekozMDNMOS15QW9Pb2FOWDZ0eDkzYTBwTlJqYjU0clFBV0dEcnp2RFBmcWd0a1Z30gFnQVVfeXFMTlJBQkFDNFA3OTI3cEdKTmR5X0daTzhDWlg5aF9pUGZsUTVIWi1XZFhtUDJBLWVQWnp4SHg1cGpwcjNLMUNsMlRNWF92SldTZ2R2TmRSMkJwYjYxMEVaZ0x0RmlUZC1uYw?oc=5&hl=en-US&gl=US&ceid=US:en\"}}",
+    "DateNews": "18-12-2024"
+  },
+]
+  ```
+</details>
+
+<details>
+
+<summary>/news/delete/</summary>
+
+  ## Método do tipo DELETE que deleta uma noticia de id específico.
+
+  ```bash
+  /news/delete/
+  ```
+ ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "IdNews":-1
+  }
+```
+- IdNews: Id da noticia a ser excluída 
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "Noticia deletada com sucesso"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/create/</summary>
+
+  ## Método do tipo POST que cria um investidor.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "name":"teste",
+    "email":"testeEmail@gmail.com",
+    "password":"teste"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "code": 200,
+  "message": "Investidor criado com sucesso"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/login/</summary>
+
+  ## Método do tipo POST que realiza o login de um investidor e retorna um token JWT.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com",
+    "password":"teste"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyRW1haWwiOiJ0ZXN0ZUVtYWlsQGdtYWlsLmNvbSIsImV4cCI6MTczNTQxNjEzNiwiaWF0IjoxNzM1MzI5NzM2fQ.U0QoOrYEz3Lh_0IQ2zXSPaiowbiuj3lhTtsvIJeJkoU"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/password/code/</summary>
+
+  ## Método do tipo POST que envia um código para o email do investidor. enpoint pensado para validação de conta e alteração de senha.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com"
+  }
+```
+  ### Exemplo de retorno:
+  ```json
+{
+  "code": 200,
+  "message": "Código enviado com sucesso"
+}
+  ```
+</details>
+
+</details>
+
+<details>
+  <summary>/investor/password/update/</summary>
+
+  ## Método do tipo POST que altera a senha de um investidor, se baseando na validação do código enviado ao email.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "email":"testeEmail@gmail.com",
+    "code":"teste",
+    "newPassword":"novasenha"
+  }
+
+```
+  - code: código enviado ao email atraves do endpoint /investor/password/code/
+  - newPassword: nova senha do investidor
+
+  ### Exemplo de retorno:
+  ```json
+  {
+    "code": 200,
+    "message": "Sucesso!"
+  }
+  ```
+</details>
+
 
   

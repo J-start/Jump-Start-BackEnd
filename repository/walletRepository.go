@@ -184,7 +184,7 @@ func (wr *WalletRepository) SearchBalanceInvestor(idInvestor int) (float64, erro
 
 func (wr *WalletRepository) FetchDatasWalletOperation(idInvestor, offset int) ([]entities.WalletOperation, error) {
 	offset *= 20
-	query := fmt.Sprintf(`SELECT operationType,operationValue,operationDate FROM tb_walletOperation WHERE idInvestor = %d LIMIT 20 OFFSET %d`, idInvestor,offset)
+	query := fmt.Sprintf(`SELECT operationType,operationValue,operationDate FROM tb_walletOperation WHERE idInvestor = %d ORDER BY operationDate DESC LIMIT 20 OFFSET %d`, idInvestor,offset)
     rows, err := wr.db.Query(query)
 
 	if err != nil {
@@ -221,6 +221,23 @@ func (wr *WalletRepository) FetchDayDeposits(idInvestor int) (float64, error) {
 	return balanceDay, nil
 }
 
+func (wr *WalletRepository) CreateWallet(idInvestor int,repositoryService *sql.Tx) error{
+		tx := repositoryService
+		query := ` INSERT INTO tb_wallet (balance, idInvestor) VALUES (?, ?) `
+		stmt, err := tx.Prepare(query)
+		if err != nil {
+			return errors.New("ocorreu um erro, tente novamente")
+		}
+		defer stmt.Close()
+		_, errExec := stmt.Exec(1000, idInvestor)
+		if errExec != nil {
+			fmt.Println(errExec)
+			return errors.New("erro ao criar carteira")
+		}
+		return nil
+	
+}
+
 
 func (wr *WalletRepository) InsertOperationWallet(operationType string,operationValue float64,operationDate string,idInvestor int,repositoryService *sql.Tx) error {
 	tx := repositoryService
@@ -251,7 +268,7 @@ func buildoperationWallet(rows *sql.Rows) ([]entities.WalletOperation, error) {
 		if err != nil {
 			return nil, err
 		}
-		operation.DperationDate = date.Format("2006-01-02")
+		operation.OperationDate = date.Format("02-01-2006")
 		operationsWallet = append(operationsWallet, operation)
 
 	}

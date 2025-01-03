@@ -32,6 +32,12 @@ func (bac *BuyAssetController) BuyAsset(w http.ResponseWriter, r *http.Request) 
 	
 	w.Header().Set("Content-Type", "application/json")
 
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+
 	var asset entities.AssetOperation
 
 	err := json.NewDecoder(r.Body).Decode(&asset)
@@ -40,6 +46,8 @@ func (bac *BuyAssetController) BuyAsset(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	asset.CodeInvestor = token
 
 	code,message := bac.useCase.BuyAsset(asset)
 	handleError.WriteHTTPStatus(w, code, message)

@@ -53,7 +53,7 @@ func (oar *OperationAssetRepository) FetchAssetHistoryByInvestor(idInvestor int,
 		OBS: offset must initate with value 0
 	*/
 	offset *= 20
-	query := fmt.Sprintf(`SELECT assetName,assetType,assetQuantity,assetValue,operationType,operationDate FROM tb_operationAsset WHERE idInvestor = %d LIMIT 20 OFFSET %d;`, idInvestor,offset)
+	query := fmt.Sprintf(`SELECT assetName,assetType,assetQuantity,assetValue,operationType,operationDate FROM tb_operationAsset WHERE idInvestor = %d ORDER BY operationDate DESC LIMIT 20 OFFSET %d`, idInvestor,offset)
 
 	rows, err := oar.db.Query(query)
 	if err != nil {
@@ -81,7 +81,7 @@ func buildAssetHistory(rows *sql.Rows) ([]entities.AssetOperationHistory, error)
 		if err != nil {
 			return nil, err
 		}
-		assetHistory.OperationDate = dateShare.Format("2006-01-02")
+		assetHistory.OperationDate = dateShare.Format("02-01-2006")
 
 		assetsHistory = append(assetsHistory, assetHistory)
 

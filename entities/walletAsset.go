@@ -21,13 +21,10 @@ type WalletDatas struct {
 	Assets []Asset
 }
 
-type WalletRequest struct {
-	TokenInvestor string `json:"tokenInvestor"`
-}
 type WalletOperation struct {
 	OperationType  string
 	OperationValue float64
-	DperationDate  string
+	OperationDate  string
 }
 
 type WalletOperationInsert struct {	
