@@ -554,5 +554,18 @@ http://localhost:8080/sell/
   ```
 </details>
 
+<details>
 
-  
+  <summary>/investor/name/</summary>
+
+  ## Método do tipo GET que retorna o nome e o saldo de um investidor baseado no token JWT.
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+  ### Exemplo de retorno:
+```json
+{
+  "name": "marcos",
+  "balance": "449.4656999999999"
+}
+  ```
+</details>

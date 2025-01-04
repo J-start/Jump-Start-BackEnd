@@ -44,13 +44,11 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 		return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
 	}
 
-
-	 idInvestor := 2
-	//  idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
-	//  if err != nil {
-	//  	repositoryService.Rollback()
-	//  	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
-	//  }
+	  idInvestor,err := uc.investorService.GetIdByToken(assetOperation.CodeInvestor)
+	  if err != nil {
+	  	repositoryService.Rollback()
+	  	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
+	  }
 
 	if err := uc.VerifyIfInvestorCanSell(assetOperation,idInvestor); err != nil {
 		return http.StatusNotAcceptable,err.Error()
