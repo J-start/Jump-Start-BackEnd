@@ -29,3 +29,8 @@ type BalanceEmailInvestor struct {
 	Name string `json:"name"`
 	Balance string `json:"balance"`
 }
+
+type QuantityInvestorAsset struct {
+	Quantity int `json:"quantity"`
+}
+

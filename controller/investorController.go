@@ -178,3 +178,34 @@ func (ic *InvestorController) GetNameAndBalance(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(datas)
 
 }
+
+func (ic *InvestorController) GetQuantityAsset(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+	asset := r.URL.Query().Get("nameAsset")
+
+	datas,errB := ic.useCase.GetAssetsQuantity(token,asset)
+	if errB != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errB.Error())
+		return
+	}
+	json.NewEncoder(w).Encode(datas)
+
+}

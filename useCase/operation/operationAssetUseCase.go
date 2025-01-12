@@ -27,11 +27,10 @@ func (uc *OperationAssetUseCase) InsertOperationAsset(datas entities.AssetInsert
 
 func (uc *OperationAssetUseCase) FetchAssetHistoryByInvestor(tokenInvestor string,offset int) ([]entities.AssetOperationHistory,error) {
 
-    //   idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	//   if err != nil {
-	//   	return []entities.AssetOperationHistory{}, errors.New("token inválido, realize o login novamente")
-	//   }
-	const idInvestor = 2
+       idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
+	   if err != nil {
+	   	return []entities.AssetOperationHistory{}, errors.New("token inválido, realize o login novamente")
+	   }
 	if offset < 0 {
 		return []entities.AssetOperationHistory{},errors.New("offset deve ser maior ou igual a 0")
 	}

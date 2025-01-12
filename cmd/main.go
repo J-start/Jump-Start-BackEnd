@@ -76,6 +76,7 @@ func main() {
 	http.HandleFunc("/investor/password/code/", investorController.SendCodeEmailRecoverPassword)
 	http.HandleFunc("/investor/password/update/", investorController.VerifyCodeEmail)
 	http.HandleFunc("/investor/name/", investorController.GetNameAndBalance)
+	http.HandleFunc("/investor/quantity/", investorController.GetQuantityAsset)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
