@@ -12,7 +12,6 @@ ARG GO_VERSION=1.23.2
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
-
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
 # Leverage bind mounts to go.sum and go.mod to avoid having to copy them into
@@ -43,7 +42,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 # The example below uses the alpine image as the foundation for running the app.
 # By specifying the "latest" tag, it will also use whatever happens to be the
 # most recent version of that image when you build your Dockerfile. If
-# reproducability is important, consider using a versioned tag
+# reproducibility is important, consider using a versioned tag
 # (e.g., alpine:3.17.2) or SHA (e.g., alpine@sha256:c41ab5c992deb4fe7e5da09f67a8804a46bd0592bfdf0b1847dde0e0889d2bff).
 FROM alpine:latest AS final
 

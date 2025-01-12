@@ -187,8 +187,8 @@ func (ir *InvestorRepository) FetchInvestorEmailAndBalance(id int) (entities.Bal
 	return datas, nil
 }
 
-func (ir *InvestorRepository) FetchAssetQuantity(idInvestor int, assetName string) (int, error) {
-	var quantity int
+func (ir *InvestorRepository) FetchAssetQuantity(idInvestor int, assetName string) (float64, error) {
+	var quantity float64
 	query := fmt.Sprintf(`SELECT twa.assetQuantity FROM tb_walletAsset AS twa INNER JOIN tb_wallet AS tw ON twa.idWallet = tw.idWallet WHERE tw.idInvestor = %d AND twa.assetName = '%s'; `, idInvestor, assetName)
 	err := ir.db.QueryRow(query).Scan(&quantity)
 
