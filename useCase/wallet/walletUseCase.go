@@ -91,11 +91,10 @@ func (uc *WalletUseCase) FindIdWallet(id int) (int, error) {
 
 func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entities.WalletDatas, error) {
 
-	//  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	//  if err != nil {
-	//  	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
-	//  }
-	const idInvestor = 2
+	  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
+	  if err != nil {
+	  	return entities.WalletDatas{}, errors.New("token inválido, realize o login novamente")
+	  }
 	balanceChan := make(chan struct {
 		result float64
 		err    error
@@ -145,11 +144,10 @@ func (uc *WalletUseCase) FetchDatasWalletInvestor(tokenInvestor string) (entitie
 
 func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int) ([]entities.WalletOperation, error) {
 
-	//  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
-	//  if err != nil {
-	//  	return []entities.WalletOperation{}, errors.New("token inválido, realize o login novamente")
-	//  }
-	const idInvestor = 2
+	  idInvestor,err := uc.investorService.GetIdByToken(tokenInvestor)
+	  if err != nil {
+	  	return []entities.WalletOperation{}, errors.New("token inválido, realize o login novamente")
+	  }
 
 	if offset < 0 {
 		return []entities.WalletOperation{}, errors.New("offset deve ser maior ou igual a 0")
@@ -164,11 +162,10 @@ func (uc *WalletUseCase) FetchOperationsWallet(tokenInvestor string, offset int)
 }
 
 func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (int, string) {
-	//  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
-	//  if err != nil {
-	//  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
-	//  }
-	const idInvestor = 2
+	  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
+	  if err != nil {
+	  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
+	  }
 	balance , err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"
@@ -209,11 +206,10 @@ func (uc *WalletUseCase) WithDraw(operation entities.WalletOperationRequest) (in
 }
 
 func (uc *WalletUseCase) Deposit(operation entities.WalletOperationRequest) (int, string) {
-	//  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
-	//  if err != nil {
-	//  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
-	//  }
-	const idInvestor = 2
+	  idInvestor,err := uc.investorService.GetIdByToken(operation.TokenInvestor)
+	  if err != nil {
+	  	return http.StatusBadRequest, errors.New("token inválido, realize o login novamente").Error()
+	  }
 	balance , err := uc.isInvestorValid(idInvestor)
 	if err != nil {
 		return http.StatusBadRequest, "dados do usuário inválidos"

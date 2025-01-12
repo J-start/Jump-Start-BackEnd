@@ -202,17 +202,30 @@ func (iu *InvestorUseCase) VerifyCode(email, code, newPassword string) error {
 }
 
 func (iu *InvestorUseCase) NameAndBalanceInvestor(token string) (entities.BalanceEmailInvestor, error) {
-	 idInvestor, err := iu.investorService.GetIdByToken(token)
-	 if err != nil {
-	 	return entities.BalanceEmailInvestor{}, errors.New("token inválido, realize o login novamente")
-	 }
+	idInvestor, err := iu.investorService.GetIdByToken(token)
+	if err != nil {
+		return entities.BalanceEmailInvestor{}, errors.New("token inválido, realize o login novamente")
+	}
 	datas, errDb := iu.repo.FetchInvestorEmailAndBalance(idInvestor)
 	if errDb != nil {
 		return entities.BalanceEmailInvestor{}, errors.New("erro ao buscar dados do investidor")
 	}
 	return datas, nil
 }
-
+func (iu *InvestorUseCase) GetAssetsQuantity(token string, nameAsset string) (entities.QuantityInvestorAsset, error) {
+	idInvestor, err := iu.investorService.GetIdByToken(token)
+	if err != nil {
+		return entities.QuantityInvestorAsset{}, errors.New("token inválido, realize o login novamente")
+	}
+	quantity, errDb := iu.repo.FetchAssetQuantity(idInvestor, nameAsset)
+	if errDb != nil {
+		return entities.QuantityInvestorAsset{}, errors.New(`erro ao buscar quantidade do ativo ` + nameAsset)
+	}
+	datas := entities.QuantityInvestorAsset{
+		Quantity: quantity,
+	}
+	return datas, nil
+}
 func isEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
