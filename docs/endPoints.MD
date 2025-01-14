@@ -569,3 +569,22 @@ http://localhost:8080/sell/
 }
   ```
 </details>
+
+<details>
+
+  <summary>/investor/quantity/</summary>
+
+  ## Método do tipo GET que retorna a quantidade de um determinado ativo em carteira.
+  ## Como o método deve ser chamado
+  ```bash
+    /investor/quantity/?nameAsset=nome_ativo
+  ```
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+  ### Exemplo de retorno:
+```json
+{
+  "quantity": 100
+}
+  ```
+</details>
