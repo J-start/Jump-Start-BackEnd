@@ -38,6 +38,7 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 	if err := uc.validateSellAssetInput(assetOperation); err != nil {
 		return http.StatusNotAcceptable,err.Error()
 	}
+
 	repositoryService,err := uc.repositoryService.StartTransaction()
 
 	if err != nil {
@@ -49,8 +50,12 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 	  	repositoryService.Rollback()
 	  	return http.StatusInternalServerError, errors.New("erro ao processar requisição, tente novamente").Error()
 	  }
+	  idWallet, err := uc.walletUseCase.FindIdWallet(idInvestor)
+	  if err != nil {
+		  return http.StatusInternalServerError,errors.New("erro ao buscar carteira").Error()
+	  }
 
-	if err := uc.VerifyIfInvestorCanSell(assetOperation,idInvestor); err != nil {
+	if err := uc.VerifyIfInvestorCanSell(assetOperation,idWallet); err != nil {
 		return http.StatusNotAcceptable,err.Error()
 	}
 
@@ -67,11 +72,11 @@ func (uc *SellAssetUseCase) SellAsset(assetOperation entities.AssetOperation) (i
 
 	valueAsset *= assetOperation.AssetAmount
 
-	err = uc.UpdateWallet(assetOperation,idInvestor,valueAsset,idOperation,repositoryService)
+	err2 := uc.UpdateWallet(assetOperation,idInvestor,valueAsset,idOperation,repositoryService)
 
-	if err != nil {
+	if err2 != nil {
 		repositoryService.Rollback()
-		return http.StatusInternalServerError,err.Error()
+		return http.StatusInternalServerError,err2.Error()
 	}
 
 	errService := repositoryService.Commit()
@@ -119,9 +124,9 @@ func (uc *SellAssetUseCase) updateWallet(assetOperation entities.AssetOperation,
 	return nil
 }
 
-func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.AssetOperation,idInvestor int) error {
+func (uc *SellAssetUseCase) VerifyIfInvestorCanSell(assetOperation entities.AssetOperation,idwallet int) error {
 
-	walletAsset, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode, idInvestor)
+	walletAsset, err := uc.assetWalletUseCase.FindAssetWallet(assetOperation.AssetCode, idwallet)
 	if err != nil {
 		if err.Error() == "ativo não existe na carteira" {
 			return fmt.Errorf("o ativo %s não existe em carteira", assetOperation.AssetCode)
