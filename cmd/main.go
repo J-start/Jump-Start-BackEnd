@@ -20,7 +20,6 @@ import (
 )
 
 func main() {
-  //teste
 	db := db.GetDB()
 
 	shareRepository := repository.NewShareRepository(db)

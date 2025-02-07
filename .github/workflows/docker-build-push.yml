@@ -24,5 +24,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/project:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/project:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
