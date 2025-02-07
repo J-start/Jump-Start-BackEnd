@@ -588,3 +588,41 @@ http://localhost:8080/sell/
 }
   ```
 </details>
+
+<details>
+
+  <summary>/investor/datas/</summary>
+
+  ## Método do tipo GET que retorna o nome e email de um investidor.
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+  ### Exemplo de retorno:
+```json
+{
+  "name": "marcos",
+  "email": "marcosemail@gmail.com"
+}
+  ```
+</details>
+
+<details>
+
+  <summary>/investor/datas/update</summary>
+
+  ## Método do tipo POST que atualiza nome e/ou email do investidor.
+### O método espera um body na requisição da seguinte forma:
+```json
+{
+  "name": "novo nome",
+  "email": "novoemail@gmail.com"
+}
+  ```
+### Obs: é necessário passar o token JWT do usuário para o Bearer 
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "Dados atualizados com sucesso"
+}
+  ```
+</details>

@@ -33,4 +33,8 @@ type BalanceEmailInvestor struct {
 type QuantityInvestorAsset struct {
 	Quantity float64 `json:"quantity"`
 }
+type DatasInvestor struct {
+	Name string `json:"name"`
+	Email string `json:"email"`
+}
 
