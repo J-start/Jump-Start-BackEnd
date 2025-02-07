@@ -17,15 +17,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
             context: .
             push: true
             tags: |
-              ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:latest
     
-              
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-image-docker-and-push  
+
+    steps:   
       - name: Login to DigitalOcean Container Registry
         uses: docker/login-action@v3
         with:
