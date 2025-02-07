@@ -226,6 +226,19 @@ func (iu *InvestorUseCase) GetAssetsQuantity(token string, nameAsset string) (en
 	}
 	return datas, nil
 }
+
+func (iu *InvestorUseCase) GetdatasInvestor(token string) (entities.DatasInvestor,error) {
+	idInvestor, err := iu.investorService.GetIdByToken(token)
+	if err != nil {
+		return entities.DatasInvestor{}, errors.New("token inválido, realize o login novamente")
+	}
+
+	datas, errDb := iu.repo.FetchDatasInvestor(idInvestor)
+	if errDb != nil {
+		return entities.DatasInvestor{}, errors.New("erro ao buscar dados do investidor")
+	}
+	return datas,nil
+}
 func isEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil

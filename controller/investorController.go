@@ -209,3 +209,33 @@ func (ic *InvestorController) GetQuantityAsset(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(datas)
 
 }
+
+func (ic *InvestorController) GetDatasInvestor(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+
+	datas,err := ic.useCase.GetdatasInvestor(token)
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	json.NewEncoder(w).Encode(datas)
+
+}

@@ -201,3 +201,14 @@ func (ir *InvestorRepository) FetchAssetQuantity(idInvestor int, assetName strin
 
 	return quantity, nil
 }
+
+func (ir *InvestorRepository) FetchDatasInvestor(idInvestor int) (entities.DatasInvestor,error){
+	var datasInvestor entities.DatasInvestor
+	query := fmt.Sprintf(`SELECT investorName,investorEmail FROM tb_investor WHERE idInvestor = %d`, idInvestor)
+	err := ir.db.QueryRow(query).Scan(&datasInvestor.Name, &datasInvestor.Email)
+	if err != nil {
+		return entities.DatasInvestor{}, err
+	}
+
+	return datasInvestor, nil
+}
