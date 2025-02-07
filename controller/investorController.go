@@ -239,3 +239,36 @@ func (ic *InvestorController) GetDatasInvestor(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(datas)
 
 }
+
+func (ic *InvestorController) UpdateDatasInvestor(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+    var datasInvestor entities.DatasInvestor
+	err := json.NewDecoder(r.Body).Decode(&datasInvestor)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	errUpdate := ic.useCase.UpdateDatasInvestor(token,datasInvestor)
+	if errUpdate != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errUpdate.Error())
+		return
+	}
+	handleError.WriteHTTPStatus(w, http.StatusOK, "Dados atualizados com sucesso")
+}

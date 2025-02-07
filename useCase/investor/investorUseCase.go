@@ -239,6 +239,26 @@ func (iu *InvestorUseCase) GetdatasInvestor(token string) (entities.DatasInvesto
 	}
 	return datas,nil
 }
+
+func (iu *InvestorUseCase) UpdateDatasInvestor(token string, datas entities.DatasInvestor) error {
+	idInvestor, err := iu.investorService.GetIdByToken(token)
+	if err != nil {
+		return errors.New("token inválido, realize o login novamente")
+	}
+	if !isEmailValid(datas.Email) {
+		return errors.New("email inválido")
+	}
+	if err := isNameValid(datas.Name); err != nil {
+		return err
+	}
+
+	errDb := iu.repo.UpdateDatasInvestor(datas, idInvestor)
+	if errDb != nil {
+		return errors.New("erro ao atualizar dados do investidor")
+	}
+	return nil
+}
+
 func isEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
@@ -248,7 +268,7 @@ func isNameValid(name string) error {
 	if name == "" {
 		return errors.New("nome vazio")
 	}
-	if len(name) < 3 || len(name) > 50 {
+	if len(name) < 3 || len(name) > 30 {
 		return errors.New("o nome deve ter entre 3 e 50 caracteres")
 	}
 	if strings.Trim(name, " ") == "" {

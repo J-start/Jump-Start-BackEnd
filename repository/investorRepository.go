@@ -148,15 +148,11 @@ func (ir *InvestorRepository) UpdateCodeInvestor(email, code string) error {
 	return nil
 }
 
-func (ir *InvestorRepository) UpdateDatasInvestor(name string, idInvestor int) error {
-	query := `
-		UPDATE tb_investor
-		SET investorName = ?
-		WHERE idInvestor = ?
-`
-	_, err := ir.db.Exec(query, name, idInvestor)
+func (ir *InvestorRepository) UpdateDatasInvestor(datas entities.DatasInvestor, idInvestor int) error {
+	query := `UPDATE tb_investor SET investorName = ? , investorEmail = ? WHERE idInvestor = ?`
+	_, err := ir.db.Exec(query, datas.Name,datas.Email, idInvestor)
 	if err != nil {
-		return errors.New("erro ao criar novo investidor")
+		return errors.New("erro ao atualizar dados, tente novamente")
 	}
 	return nil
 }
@@ -212,3 +208,4 @@ func (ir *InvestorRepository) FetchDatasInvestor(idInvestor int) (entities.Datas
 
 	return datasInvestor, nil
 }
+
