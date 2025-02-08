@@ -72,3 +72,37 @@ func (lauc *ListAssetUseCase) UpdateUrlImage(token string,datas entities.UpdateU
 	}
 	return nil
 }
+
+func (lauc *ListAssetUseCase) AddNewAsset(token string,asset entities.NewAsset) error{
+	if err :=validateAsset(asset); err != nil  {
+		return err
+	}
+    isAdm,err := lauc.investorService.IsAdm(token)
+	if err != nil {
+		return errors.New("ocorreu um erro, tente novamente")
+	}
+	if !isAdm {
+		return errors.New("você não tem permissão para acessar essa funcionalidade")
+	}
+	errUpdate := lauc.repo.InsertAsset(asset)
+	if errUpdate != nil {
+		return errors.New("ocorreu um erro, tente novamente")
+	}
+	return nil
+}
+
+func validateAsset(asset entities.NewAsset) error{
+	if asset.NameAsset == "" || strings.Trim(asset.NameAsset," ") == "" || len(asset.NameAsset) > 100 {
+		return errors.New("nome inválido")
+	}
+	if asset.AcronymAsset == "" || strings.Trim(asset.AcronymAsset," ") == "" || len(asset.AcronymAsset) > 15 {
+		return errors.New("acrônimo inválido")
+	}
+	if asset.UrlImage == "" || strings.Trim(asset.UrlImage," ") == ""  {
+		return errors.New("url da imagem inválida")
+	}
+	if asset.TypeAsset == "" || (asset.TypeAsset != "CRYPTO" && asset.TypeAsset != "SHARE" && asset.TypeAsset != "COIN") {
+		return errors.New("tipo de ativo inválido")
+	}
+	return nil
+}

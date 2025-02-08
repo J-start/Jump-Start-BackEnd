@@ -91,3 +91,11 @@ func(repo *ListAssetRepository) UpdateAssetImageUrlById(newUrl string,idAsset in
 	return nil
 }
 
+func(repo *ListAssetRepository) InsertAsset(asset entities.NewAsset) error {
+	query := fmt.Sprintf(`INSERT INTO list_asset (nameAsset,acronymAsset,url_image,typeAsset) VALUES ('%s','%s','%s','%s')`, asset.NameAsset, asset.AcronymAsset, asset.UrlImage, asset.TypeAsset)
+	_, err := repo.db.Query(query)
+	if err != nil {
+		return errors.New("erro ao adicionar asset")
+	}
+	return nil
+}

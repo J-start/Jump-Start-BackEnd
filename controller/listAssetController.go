@@ -145,3 +145,44 @@ func (lac *ListAssetController) UpdateUrlImage(w http.ResponseWriter, r *http.Re
 		
 }
 
+
+func (lac *ListAssetController) CreateNewAsset(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+
+	code,token := getTokenJWT(r)
+	if code != http.StatusOK {
+		handleError.WriteHTTPStatus(w, code, token)
+		return
+	}
+
+	var datas entities.NewAsset
+	err := json.NewDecoder(r.Body).Decode(&datas)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	errUpdate := lac.useCase.AddNewAsset(token,datas)
+	if errUpdate != nil {
+		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, errUpdate.Error())
+		return
+	}
+
+	handleError.WriteHTTPStatus(w, http.StatusOK, "ativo adicionado com sucesso")
+
+		
+}
+
+
