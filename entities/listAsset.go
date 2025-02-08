@@ -9,4 +9,7 @@ type ListAsset struct {
 	TypeAsset string `json:"typeAsset"`
 }
 
-
+type UpdateUrlImage struct {
+	IdAsset int `json:"idAsset"`
+	NewUrl string `json:"newUrl"`
+}

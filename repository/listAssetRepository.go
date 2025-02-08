@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
 
@@ -79,5 +80,14 @@ func(repo *ListAssetRepository) FetchListAssetsAdm() ([]entities.ListAsset,error
 	}
 
 	return listAssetRequest,nil
+}
+
+func(repo *ListAssetRepository) UpdateAssetImageUrlById(newUrl string,idAsset int) error {
+	query := fmt.Sprintf(`UPDATE list_asset SET url_image = '%s' WHERE idList = %d`, newUrl, idAsset)
+	_, err := repo.db.Query(query)
+	if err != nil {
+		return errors.New("erro ao atualizar url, tente novamente")
+	}
+	return nil
 }
 

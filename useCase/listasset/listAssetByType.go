@@ -54,3 +54,21 @@ func (lauc *ListAssetUseCase) GetListAssets(token string) ([]entities.ListAsset,
 	}
 	return listAssets, nil
 }
+
+func (lauc *ListAssetUseCase) UpdateUrlImage(token string,datas entities.UpdateUrlImage) error{
+	if datas.IdAsset <= 0 || datas.NewUrl == "" {
+		return errors.New("algum dado é inválido")
+	}
+    isAdm,err := lauc.investorService.IsAdm(token)
+	if err != nil {
+		return errors.New("ocorreu um erro, tente novamente")
+	}
+	if !isAdm {
+		return errors.New("você não tem permissão para acessar essa funcionalidade")
+	}
+	errUpdate := lauc.repo.UpdateAssetImageUrlById(datas.NewUrl,datas.IdAsset)
+	if errUpdate != nil {
+		return errors.New("ocorreu um erro, tente novamente")
+	}
+	return nil
+}
