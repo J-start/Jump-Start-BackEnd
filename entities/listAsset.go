@@ -9,3 +9,4 @@ type ListAsset struct {
 	TypeAsset string `json:"typeAsset"`
 }
 
+

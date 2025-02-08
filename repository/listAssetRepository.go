@@ -61,3 +61,23 @@ func (repo *ListAssetRepository) ListAssetRequest(asset string) ([]string,error)
 	return listAssetRequest,nil
 }
 
+func(repo *ListAssetRepository) FetchListAssetsAdm() ([]entities.ListAsset,error){
+	query := fmt.Sprintf(`SELECT * FROM list_asset`)
+	rows, err := repo.db.Query(query)
+	if err != nil {
+		return []entities.ListAsset{}, err
+	}
+	defer rows.Close()
+	var listAssetRequest []entities.ListAsset
+	for rows.Next() {
+		var asset entities.ListAsset
+		err := rows.Scan(&asset.IdList, &asset.NameAsset, &asset.AcronymAsset, &asset.UrlImage, &asset.TypeAsset)
+		if err != nil {
+			return []entities.ListAsset{},err
+		}
+		listAssetRequest = append(listAssetRequest, asset)
+	}
+
+	return listAssetRequest,nil
+}
+

@@ -33,7 +33,7 @@ func main() {
 
 	investorService := investor_service.NewInvestorService(investorRepository)
 
-	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
+	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository,investorService)
 	
 	newsUseCase := news.NewNewsUseCase(newsRepository,investorService)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
@@ -63,6 +63,7 @@ func main() {
 	http.HandleFunc("/sell/", sellAssetController.SellAsset)//*
 	http.HandleFunc("/details/asset/", listAssetController.ListAsset)
 	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
+	http.HandleFunc("/assets/list/", listAssetController.ListAssets)
 	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)//*
 	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)//*
 	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)//*

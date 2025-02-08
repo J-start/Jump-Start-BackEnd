@@ -4,15 +4,17 @@ import (
 	"errors"
 	"jumpStart-backEnd/entities"
 	"jumpStart-backEnd/repository"
+	"jumpStart-backEnd/service/investor_service"
 	"strings"
 )
 
 type ListAssetUseCase struct {
 	repo *repository.ListAssetRepository
+	investorService   *investor_service.InvestorService
 }
 
-func NewListAssetUseCase(repo *repository.ListAssetRepository) *ListAssetUseCase {
-	return &ListAssetUseCase{repo: repo}
+func NewListAssetUseCase(repo *repository.ListAssetRepository,investorService *investor_service.InvestorService) *ListAssetUseCase {
+	return &ListAssetUseCase{repo: repo,investorService: investorService}
 }
 
 func (lauc *ListAssetUseCase) ListAssetByType(asset string) ([]entities.ListAsset, error) {
@@ -36,4 +38,19 @@ func (lauc *ListAssetUseCase) ListAssetRequest(asset string) (string, error) {
 	}
 	listAssetRequestString := strings.Join(listAssetRequest, ",")
 	return listAssetRequestString, nil
+}
+
+func (lauc *ListAssetUseCase) GetListAssets(token string) ([]entities.ListAsset, error) {
+    isAdm,err := lauc.investorService.IsAdm(token)
+	if err != nil {
+		return []entities.ListAsset{}, errors.New("ocorreu um erro, tente novamente")
+	}
+	if !isAdm {
+		return []entities.ListAsset{}, errors.New("você não tem permissão para acessar essa funcionalidade")
+	}
+	listAssets,err := lauc.repo.FetchListAssetsAdm()
+	if err != nil {
+		return []entities.ListAsset{}, errors.New("ocorreu um erro, tente novamente")
+	}
+	return listAssets, nil
 }
