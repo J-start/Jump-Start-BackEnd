@@ -33,7 +33,7 @@ func main() {
 
 	investorService := investor_service.NewInvestorService(investorRepository)
 
-	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository)
+	listAssetUseCase := listasset.NewListAssetUseCase(listAssetRepository,investorService)
 	
 	newsUseCase := news.NewNewsUseCase(newsRepository,investorService)
 	assetWalletUseCase := assetwallet.NewAssetWalletUseCase(assetWalletRepository)
@@ -59,18 +59,26 @@ func main() {
 	http.HandleFunc("/datas/shares/offset", shareController.GetSharesSpecifyOffSet)
 	http.HandleFunc("/data/share/", shareController.GetShareById)
 	http.HandleFunc("/datas/share/", shareController.GetShareList)
-	http.HandleFunc("/buy/", BuyAssetController.BuyAsset)//*
-	http.HandleFunc("/sell/", sellAssetController.SellAsset)//*
+	
+	http.HandleFunc("/buy/", BuyAssetController.BuyAsset)
+	http.HandleFunc("/sell/", sellAssetController.SellAsset)
+	
 	http.HandleFunc("/details/asset/", listAssetController.ListAsset)
 	http.HandleFunc("/asset/request/", listAssetController.ListAssetRequest)
-	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)//*
-	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)//*
-	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)//*
-	http.HandleFunc("/withdraw/", walletController.WithDraw)//*
-	http.HandleFunc("/deposit/", walletController.Deposit)//*
+	http.HandleFunc("/assets/list/", listAssetController.ListAssets)
+	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
+	http.HandleFunc("/update/image/asset/", listAssetController.UpdateUrlImage)
+	http.HandleFunc("/add/asset/", listAssetController.CreateNewAsset)
+	
+	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
+	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
+	http.HandleFunc("/withdraw/", walletController.WithDraw)
+	http.HandleFunc("/deposit/", walletController.Deposit)
+
 	http.HandleFunc("/news/", newsController.FetchNews)
 	http.HandleFunc("/news/delete/", newsController.DeleteNews)
-	http.HandleFunc("/investor/create/", investorController.CreateInvestor) //*
+	
+	http.HandleFunc("/investor/create/", investorController.CreateInvestor) 
 	http.HandleFunc("/investor/login/", investorController.Login)
 	http.HandleFunc("/investor/password/code/", investorController.SendCodeEmailRecoverPassword)
 	http.HandleFunc("/investor/password/update/", investorController.VerifyCodeEmail)
@@ -78,6 +86,7 @@ func main() {
 	http.HandleFunc("/investor/quantity/", investorController.GetQuantityAsset)
 	http.HandleFunc("/investor/datas/", investorController.GetDatasInvestor)
 	http.HandleFunc("/investor/datas/update", investorController.UpdateDatasInvestor)
+	http.HandleFunc("/investor/role/", investorController.IsAdm)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

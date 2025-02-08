@@ -626,3 +626,93 @@ http://localhost:8080/sell/
 }
   ```
 </details>
+
+<details>
+
+  <summary>/assets/list/</summary>
+
+## Método do tipo GET que retorna a lista de ativos disponíveis.
+
+### Obs: é necessário passar o token JWT do usuário para o Bearer pois o usuário precisa ser um administrador
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "id": 1,
+    "name": "Cardano",
+    "acronym": "ADA-BRL",
+    "urlImage": "https://cdn.investing.com/crypto-logos/20x20/v2/cardano.png",
+    "typeAsset": "CRYPTO"
+  },
+  {
+    "id": 2,
+    "name": "Axie Infinity",
+    "acronym": "AXS-BRL",
+    "urlImage": "https://cdn.investing.com/crypto-logos/20x20/v2/axie-infinity.png",
+    "typeAsset": "CRYPTO"
+  }
+]
+  ```
+</details>
+
+
+<details>
+
+  <summary>/update/image/asset/</summary>
+
+## Método do tipo POST que atualiza a imagem de um determinado ativo.
+## O método espera receber um body no seguinte formato
+```json
+{
+  "idAsset":1,
+  "newUrl":"https://newimage.png"
+}
+  ```
+### Obs: é necessário passar o token JWT do usuário para o Bearer pois o usuário precisa ser um administrador
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "Imagem atualizada com sucesso"
+}
+  ```
+</details>
+
+<details>
+
+  <summary>/add/asset/</summary>
+
+## Método do tipo POST que adiciona um novo ativo à lista de ativos disponíveis.
+## O método espera receber um body no seguinte formato
+```json
+{
+  "name":"Dólar",
+  "acronym":"USD",
+  "urlImage":"https://newimage.png",
+  "typeAsset":"COIN"
+}
+  ```
+### Obs: é necessário passar o token JWT do usuário para o Bearer pois o usuário precisa ser um administrador
+  ### Exemplo de retorno:
+```json
+{
+  "code": 200,
+  "message": "ativo adicionado com sucesso"
+}
+  ```
+</details>
+
+<details>
+
+  <summary>/investor/role/</summary>
+
+## Método do tipo GET que retorna se o investidor é um administrador.
+
+### Obs: é necessário passar o token JWT do usuário
+  ### Exemplo de retorno:
+```json
+{
+  "isAdm": false
+}
+  ```
+</details>

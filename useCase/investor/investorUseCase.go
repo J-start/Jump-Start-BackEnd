@@ -27,6 +27,10 @@ type InvestorUseCase struct {
 	investorService   *investor_service.InvestorService
 }
 
+type Role struct {
+	IsAdm bool `json:"isAdm"`
+}
+
 func NewInvestorUseCase(repo *repository.InvestorRepository, walletUseCase *wallet.WalletUseCase, repositoryService *servicerepository.ServiceRepository, investorService *investor_service.InvestorService) *InvestorUseCase {
 	return &InvestorUseCase{repo: repo, walletUseCase: walletUseCase, repositoryService: repositoryService, investorService: investorService}
 }
@@ -257,6 +261,18 @@ func (iu *InvestorUseCase) UpdateDatasInvestor(token string, datas entities.Data
 		return errors.New("erro ao atualizar dados do investidor")
 	}
 	return nil
+}
+
+func (iu *InvestorUseCase) IsAdm(token string)(Role,error){
+	isAdm,err := iu.investorService.IsAdm(token)
+	if err != nil {
+		return Role{},errors.New("erro ao verificar permissão")
+	}
+	var role Role = Role{
+		IsAdm: isAdm,
+	}
+
+	return role,nil
 }
 
 func isEmailValid(email string) bool {
