@@ -86,6 +86,7 @@ func main() {
 	http.HandleFunc("/investor/quantity/", investorController.GetQuantityAsset)
 	http.HandleFunc("/investor/datas/", investorController.GetDatasInvestor)
 	http.HandleFunc("/investor/datas/update", investorController.UpdateDatasInvestor)
+	http.HandleFunc("/investor/role/", investorController.IsAdm)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
