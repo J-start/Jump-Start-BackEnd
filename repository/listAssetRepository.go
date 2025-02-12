@@ -63,7 +63,7 @@ func (repo *ListAssetRepository) ListAssetRequest(asset string) ([]string,error)
 }
 
 func(repo *ListAssetRepository) FetchListAssetsAdm() ([]entities.ListAsset,error){
-	query := fmt.Sprintf(`SELECT * FROM list_asset`)
+	query := fmt.Sprintf(`SELECT * FROM list_asset ORDER BY typeAsset`)
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return []entities.ListAsset{}, err
