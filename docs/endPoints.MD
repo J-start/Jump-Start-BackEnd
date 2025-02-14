@@ -530,7 +530,7 @@ http://localhost:8080/sell/
 </details>
 
 <details>
-  <summary>/investor/verify/code/</summary>
+  <summary>/investor/verify/token/</summary>
 
   ## Método do tipo POST que tem o objetivo de validar um token que foi gerado contendo seu email.
   ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:

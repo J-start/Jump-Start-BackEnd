@@ -81,7 +81,7 @@ func main() {
 	http.HandleFunc("/investor/create/", investorController.CreateInvestor) 
 	http.HandleFunc("/investor/login/", investorController.Login)
 	http.HandleFunc("/investor/url/password/", investorController.SendUrlByEmailToRecoverPassword)
-	http.HandleFunc("/investor/verify/code/", investorController.VerifyTokenEmail)
+	http.HandleFunc("/investor/verify/token/", investorController.VerifyTokenEmail)
 	http.HandleFunc("/investor/update/password/", investorController.UpdatePassword)
 	http.HandleFunc("/investor/name/", investorController.GetNameAndBalance)
 	http.HandleFunc("/investor/quantity/", investorController.GetQuantityAsset)
