@@ -1,6 +1,7 @@
 package jwt_security
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -29,6 +30,19 @@ func GenerateToken(userEmail string) (string, error) {
 	return token.SignedString(secretKey)
 }
 
+func GenerateTokenWithNMinutes(userEmail string,timeValid int) (string, error) {
+	claims := CustomClaims{
+		UserEmail: userEmail,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(timeValid) * time.Minute)), 
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	secretKey := getSecretyKey()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secretKey)
+}
+
 func ValidateToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -39,7 +53,10 @@ func ValidateToken(tokenString string) (*CustomClaims, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, fmt.Errorf("token expirado")
+		}
+		return nil, fmt.Errorf("token inválido")
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
@@ -48,6 +65,7 @@ func ValidateToken(tokenString string) (*CustomClaims, error) {
 
 	return nil, fmt.Errorf("token inválido")
 }
+
 
 func getSecretyKey() []byte{
 	err2 := godotenv.Load()

@@ -20,8 +20,11 @@ type SendCodeEmail struct {
 }
 
 type CodeChangePassword struct {
-	Email string `json:"email"`
-	Code string `json:"code"`
+	Token string `json:"token"`
+}
+
+type UpdatePassword struct {
+	Token string `json:"token"`
 	NewPassword string `json:"newPassword"`
 }
 

@@ -1,8 +1,6 @@
 package investor
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
@@ -115,7 +113,10 @@ func (iu *InvestorUseCase) LoginInvestor(investor entities.LoginInvestor) (entit
 
 }
 
-func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
+func (iu *InvestorUseCase) SendUrlToRecoverPassword(email string) error {
+	if !isEmailValid(email) {
+		return errors.New("email invalido")
+	}
 	_, errEmailDB := iu.repo.IsEmailExists(email)
 	if errEmailDB != nil {
 		if errEmailDB.Error() == "e-mail não encontrado" {
@@ -123,13 +124,6 @@ func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
 		} else {
 			return errors.New("ocoreu um erro, tente novamente")
 		}
-	}
-	if !isEmailValid(email) {
-		return errors.New("email invalido")
-	}
-	code, errCode := generateRandomString(3)
-	if errCode != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errCode.Error())
 	}
 
 	credentials, errCredentials := recoverCredentialsEmail()
@@ -137,47 +131,47 @@ func (iu *InvestorUseCase) SendCodeToRecoverPassword(email string) error {
 		return errors.New("ocoreu um erro, tente novamente" + errCredentials.Error())
 	}
 
-	bodyEmail := "Código para recuperação: " + code
+	token, errToken := jwt_security.GenerateTokenWithNMinutes(email, 15)
 
-	key, errKey := getKeyEncryption()
-	if errKey != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errKey.Error())
+	if errToken != nil {
+		return errors.New("erro ao gerar url para recuperação de senha")
 	}
 
-	codeEncryption, errCrypto := encryption.EncryptMessage(key, code)
-	if errCrypto != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errCrypto.Error())
-	}
+	url := fmt.Sprintf("https://jump-start-frontend.onrender.com/recoverPassword.html?token=%s", token)
 
-	errUpdate := iu.repo.UpdateCodeInvestor(email, codeEncryption)
-	if errUpdate != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errUpdate.Error())
-	}
+	bodyEmail := fmt.Sprintf("Para atualizar sua senha acesse o seguinte link para a plataforma jumpStart: %s", url)
 
-	errEmail := email_service.SendEmail(email, credentials[0], credentials[1], "Jump start - Código recuperação de senha", bodyEmail)
+	errEmail := email_service.SendEmail(email, credentials[0], credentials[1], "Jump start - Recuperação de senha", bodyEmail)
 	if errEmail != nil {
 		return errors.New("ocoreu um erro, tente novamente")
 	}
 	return nil
 }
 
-func (iu *InvestorUseCase) VerifyCode(email, code, newPassword string) error {
-	_, errEmailDB := iu.repo.IsEmailExists(email)
+func (iu *InvestorUseCase) VerifyToken(token string) error {
+	_, err := jwt_security.ValidateToken(token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (iu *InvestorUseCase) UpdatePasswordInvestor(token string, newPassword string) error {
+	email, err := jwt_security.ValidateToken(token)
+	if err != nil {
+		return err
+	}
+	if !isEmailValid(email.UserEmail) {
+		return errors.New("email invalido")
+	}
+	_, errEmailDB := iu.repo.IsEmailExists(email.UserEmail)
 	if errEmailDB != nil {
 		if errEmailDB.Error() == "e-mail não encontrado" {
-			return errors.New("email não encontrado")
+			return errors.New("usuário não encontrado")
 		} else {
 			return errors.New("ocoreu um erro, tente novamente")
 		}
-	}
-
-	if !isEmailValid(email) {
-		return errors.New("email invalido")
-	}
-
-	codeEncrypted, errDb := iu.repo.FetchCodeInvestorByEmail(email)
-	if errDb != nil {
-		return errors.New("aconteceu algum erro, tente novamente")
 	}
 
 	key, errKey := getKeyEncryption()
@@ -185,24 +179,18 @@ func (iu *InvestorUseCase) VerifyCode(email, code, newPassword string) error {
 		return errors.New("ocoreu um erro, tente novamente" + errKey.Error())
 	}
 
-	codeDescrypted, errDecryp := encryption.DecryptMessage(key, codeEncrypted)
-	if errDecryp != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errDecryp.Error())
-	}
-	if codeDescrypted != code {
-		return errors.New("código incorreto")
-	}
-	passwordEncrypted, errEncrypted := encryption.EncryptMessage(key, newPassword)
-	if errEncrypted != nil {
-		return errors.New("ocoreu um erro, tente novamente" + errEncrypted.Error())
+	passwoesEncrypted, errCrypto := encryption.EncryptMessage(key, newPassword)
+	if errCrypto != nil {
+		return errors.New("ocoreu um erro, tente novamente" + errCrypto.Error())
 	}
 
-	err := iu.repo.UpdatePasswordInvestor(email, passwordEncrypted)
-	if err != nil {
-		return errors.New("ocoreu um erro, tente novamente" + err.Error())
+	errDb := iu.repo.UpdatePasswordInvestor(email.UserEmail, passwoesEncrypted)
+	if errDb != nil {
+		return errors.New("ocoreu um erro ao atualiza senha, tente novamente")
 	}
 
 	return nil
+
 }
 
 func (iu *InvestorUseCase) NameAndBalanceInvestor(token string) (entities.BalanceEmailInvestor, error) {
@@ -231,7 +219,7 @@ func (iu *InvestorUseCase) GetAssetsQuantity(token string, nameAsset string) (en
 	return datas, nil
 }
 
-func (iu *InvestorUseCase) GetdatasInvestor(token string) (entities.DatasInvestor,error) {
+func (iu *InvestorUseCase) GetdatasInvestor(token string) (entities.DatasInvestor, error) {
 	idInvestor, err := iu.investorService.GetIdByToken(token)
 	if err != nil {
 		return entities.DatasInvestor{}, errors.New("token inválido, realize o login novamente")
@@ -241,7 +229,7 @@ func (iu *InvestorUseCase) GetdatasInvestor(token string) (entities.DatasInvesto
 	if errDb != nil {
 		return entities.DatasInvestor{}, errors.New("erro ao buscar dados do investidor")
 	}
-	return datas,nil
+	return datas, nil
 }
 
 func (iu *InvestorUseCase) UpdateDatasInvestor(token string, datas entities.DatasInvestor) error {
@@ -263,16 +251,16 @@ func (iu *InvestorUseCase) UpdateDatasInvestor(token string, datas entities.Data
 	return nil
 }
 
-func (iu *InvestorUseCase) IsAdm(token string)(Role,error){
-	isAdm,err := iu.investorService.IsAdm(token)
+func (iu *InvestorUseCase) IsAdm(token string) (Role, error) {
+	isAdm, err := iu.investorService.IsAdm(token)
 	if err != nil {
-		return Role{},errors.New("erro ao verificar permissão")
+		return Role{}, errors.New("erro ao verificar permissão")
 	}
 	var role Role = Role{
 		IsAdm: isAdm,
 	}
 
-	return role,nil
+	return role, nil
 }
 
 func isEmailValid(email string) bool {
@@ -315,15 +303,6 @@ func getSecretyKey() []byte {
 	jwtSecret := []byte(PASSWORD)
 
 	return jwtSecret
-}
-
-func generateRandomString(length int) (string, error) {
-	b := make([]byte, length)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 func recoverCredentialsEmail() ([]string, error) {
