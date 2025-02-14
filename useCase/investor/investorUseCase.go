@@ -308,7 +308,7 @@ func getSecretyKey() []byte {
 func recoverCredentialsEmail() ([]string, error) {
 	err2 := godotenv.Load()
 	if err2 != nil {
-		return nil, err2
+		fmt.Println(err2) 
 	}
 	PASSWORD_EMAIL := os.Getenv("PASSWORD_EMAIL")
 	ADRESS_EMAIL := os.Getenv("ADRESS_EMAIL")
@@ -321,7 +321,7 @@ func recoverCredentialsEmail() ([]string, error) {
 func getKeyEncryption() ([]byte, error) {
 	err2 := godotenv.Load()
 	if err2 != nil {
-		return nil, errors.New("ocorreu um erro")
+		fmt.Println(err2) 
 	}
 	PASSWORD := os.Getenv("ENCRYPT_KEY")
 	key := []byte(PASSWORD)
