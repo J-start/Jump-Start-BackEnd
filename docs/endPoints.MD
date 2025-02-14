@@ -509,9 +509,9 @@ http://localhost:8080/sell/
 </details>
 
 <details>
-  <summary>/investor/password/code/</summary>
+  <summary>/investor/url/password/</summary>
 
-  ## Método do tipo POST que envia um código para o email do investidor. enpoint pensado para validação de conta e alteração de senha.
+  ## Método do tipo POST que envia uma url para o email do investidor, cujo intuito é o usuario clicar na url e poder alterar a senha.
   ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
    {
@@ -530,27 +530,45 @@ http://localhost:8080/sell/
 </details>
 
 <details>
-  <summary>/investor/password/update/</summary>
+  <summary>/investor/verify/code/</summary>
 
-  ## Método do tipo POST que altera a senha de um investidor, se baseando na validação do código enviado ao email.
+  ## Método do tipo POST que tem o objetivo de validar um token que foi gerado contendo seu email.
   ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
 ```json
    {
-    "email":"testeEmail@gmail.com",
-    "code":"teste",
-    "newPassword":"novasenha"
+    "token":"string"
   }
 
 ```
-  - code: código enviado ao email atraves do endpoint /investor/password/code/
-  - newPassword: nova senha do investidor
 
   ### Exemplo de retorno:
   ```json
-  {
-    "code": 200,
-    "message": "Sucesso!"
+{
+  "code": 200,
+  "message": "token válido!"
+}
+  ```
+</details>
+
+<details>
+  <summary>/investor/update/password/</summary>
+
+  ## Método do tipo POST que tem o objetivo atualizar a senha de um investidor se baseando no token enviado ao email.
+  ### O endpoint espera receber um json no body da requisição, o body possui a seguinte estrutura:
+```json
+   {
+    "token":"string",
+    "newPassword":"newPassword"
   }
+
+```
+
+  ### Exemplo de retorno:
+  ```json
+{
+  "code": 200,
+  "message": "sucesso"
+}
   ```
 </details>
 
