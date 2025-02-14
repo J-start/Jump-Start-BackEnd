@@ -82,7 +82,7 @@ func (ic *InvestorController) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (ic *InvestorController) SendCodeEmailRecoverPassword(w http.ResponseWriter, r *http.Request) {
+func (ic *InvestorController) SendUrlByEmailToRecoverPassword(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	if r.Method == "OPTIONS" {
@@ -106,7 +106,7 @@ func (ic *InvestorController) SendCodeEmailRecoverPassword(w http.ResponseWriter
 	}
 
 
-	errA := ic.useCase.SendCodeToRecoverPassword(investor.Email)
+	errA := ic.useCase.SendUrlToRecoverPassword(investor.Email)
 	if errA != nil {
 		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errA.Error())
 		return
@@ -116,7 +116,7 @@ func (ic *InvestorController) SendCodeEmailRecoverPassword(w http.ResponseWriter
 
 }
 
-func (ic *InvestorController) VerifyCodeEmail(w http.ResponseWriter, r *http.Request) {
+func (ic *InvestorController) VerifyTokenEmail(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	if r.Method == "OPTIONS" {
@@ -139,7 +139,40 @@ func (ic *InvestorController) VerifyCodeEmail(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	errB := ic.useCase.VerifyCode(investor.Email,investor.Code,investor.NewPassword)
+	errB := ic.useCase.VerifyToken(investor.Token)
+	if errB != nil {
+		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errB.Error())
+		return
+	}
+
+	handleError.WriteHTTPStatus(w, http.StatusOK, "Token válido!")
+
+}
+
+func (ic *InvestorController) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	var investor entities.UpdatePassword
+
+	err := json.NewDecoder(r.Body).Decode(&investor)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	errB := ic.useCase.UpdatePasswordInvestor(investor.Token,investor.NewPassword)
 	if errB != nil {
 		handleError.WriteHTTPStatus(w, http.StatusBadRequest, errB.Error())
 		return
