@@ -69,6 +69,7 @@ func main() {
 	http.HandleFunc("/history/assets/", operationAssetController.FetchHistoryOperationInvestor)
 	http.HandleFunc("/update/image/asset/", listAssetController.UpdateUrlImage)
 	http.HandleFunc("/add/asset/", listAssetController.CreateNewAsset)
+	http.HandleFunc("/history/crypto/", listAssetController.GetHistoryCrypto)
 	
 	http.HandleFunc("/wallet/datas/", walletController.FetchDatasWallet)
 	http.HandleFunc("/history/operations/", walletController.FetchOperationsWallet)
