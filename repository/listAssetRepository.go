@@ -123,10 +123,10 @@ func(repo *ListAssetRepository) FetchHistoryValuesCrypto(nameCrypto string) ([]e
 			return []entities.CryptoHistory{},errors.New("erro ao processar ativos, tente novamente")
 		}
 
-		crypto.Date = date.Format("2006-01-02")
+		crypto.Date = date.Format("02-01-2006")
 		listCrypto = append(listCrypto, crypto)
 	}
-	
+
 	if listCrypto == nil {
 		return []entities.CryptoHistory{}, errors.New("histórico não econtrado")
 	}

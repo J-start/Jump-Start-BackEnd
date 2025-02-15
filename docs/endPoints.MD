@@ -734,3 +734,27 @@ http://localhost:8080/sell/
 }
   ```
 </details>
+
+<details>
+
+  <summary>/history/crypto/</summary>
+
+
+## Método do tipo GET que retorna o histórico de preço de até 30 dias de uma cryptomoeda.
+```shell
+/history/crypto/?crypto=NAME_CRYPTO
+```
+  ### Exemplo de retorno:
+```json
+[
+  {
+    "value": 1132.37,
+    "date": "14-02-2025"
+  },
+  {
+    "value": 1118.04,
+    "date": "15-02-2025"
+  }
+]
+  ```
+</details>
