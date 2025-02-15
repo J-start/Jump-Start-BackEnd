@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"jumpStart-backEnd/entities"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -98,4 +99,36 @@ func(repo *ListAssetRepository) InsertAsset(asset entities.NewAsset) error {
 		return errors.New("erro ao adicionar asset")
 	}
 	return nil
+}
+
+func(repo *ListAssetRepository) FetchHistoryValuesCrypto(nameCrypto string) ([]entities.CryptoHistory,error) {
+	
+	query := fmt.Sprintf(`SELECT t1.valueCrypto,t1.dateCrypto FROM tb_crypto AS t1 JOIN ( SELECT MAX(id) AS max_id FROM tb_crypto WHERE nameCrypto = '%s' GROUP BY dateCrypto) AS t2 ON t1.id = t2.max_id ORDER BY t1.dateCrypto`, nameCrypto)
+	
+	rows, err := repo.db.Query(query)
+	if err != nil {
+		return []entities.CryptoHistory{}, errors.New("erro ao buscar dados do ativo")
+	}
+
+	defer rows.Close()
+	var listCrypto []entities.CryptoHistory
+
+	for rows.Next() {
+		var crypto entities.CryptoHistory
+		var date time.Time
+
+		err2 := rows.Scan(&crypto.Value,&date)
+		if err2 != nil {
+			fmt.Println(err2)
+			return []entities.CryptoHistory{},errors.New("erro ao processar ativos, tente novamente")
+		}
+
+		crypto.Date = date.Format("02-01-2006")
+		listCrypto = append(listCrypto, crypto)
+	}
+
+	if listCrypto == nil {
+		return []entities.CryptoHistory{}, errors.New("histórico não econtrado")
+	}
+	return listCrypto,nil
 }

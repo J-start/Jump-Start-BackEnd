@@ -185,4 +185,30 @@ func (lac *ListAssetController) CreateNewAsset(w http.ResponseWriter, r *http.Re
 		
 }
 
+func (lac *ListAssetController) GetHistoryCrypto(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	crypto := r.URL.Query().Get("crypto")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	response,err := lac.useCase.GetHistoryCrypto(crypto)
+	if err != nil {
+		handleError.WriteHTTPStatus(w, http.StatusNotAcceptable, err.Error())
+		return
+	}
+
+	json.NewEncoder(w).Encode(response)
+
+		
+}
+
 

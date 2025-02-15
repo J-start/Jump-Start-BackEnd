@@ -98,7 +98,6 @@ func (ir *InvestorRepository) UpdatePasswordInvestor(email, newPassword string) 
 
 	_, err := ir.db.Exec(query, newPassword, email)
 	if err != nil {
-		fmt.Println("error ",err)
 		return errors.New("erro ao atualizar a senha")
 	}
 	return nil

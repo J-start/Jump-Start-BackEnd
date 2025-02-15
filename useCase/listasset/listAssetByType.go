@@ -91,6 +91,19 @@ func (lauc *ListAssetUseCase) AddNewAsset(token string,asset entities.NewAsset) 
 	return nil
 }
 
+func (lauc *ListAssetUseCase) GetHistoryCrypto(crypto string) ([]entities.CryptoHistory,error){
+	if len(crypto) == 0 || strings.Trim(crypto," ") == ""{
+		return []entities.CryptoHistory{},errors.New("nome de cryptomoeda inválido")
+	}
+
+	listCrypto,err := lauc.repo.FetchHistoryValuesCrypto(crypto)
+	if err != nil {
+		return []entities.CryptoHistory{},err
+	}
+
+	return listCrypto,nil
+}
+
 func validateAsset(asset entities.NewAsset) error{
 	if asset.NameAsset == "" || strings.Trim(asset.NameAsset," ") == "" || len(asset.NameAsset) > 100 {
 		return errors.New("nome inválido")

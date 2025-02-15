@@ -19,3 +19,7 @@ type UpdateUrlImage struct {
 	IdAsset int `json:"idAsset"`
 	NewUrl string `json:"newUrl"`
 }
+type CryptoHistory struct {
+	Value float64 `json:"value"`
+	Date string `json:"date"`
+}
