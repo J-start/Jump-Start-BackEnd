@@ -13,7 +13,7 @@ import (
 )
 
 func MakeRequestAsset(assetType, assetCode string) (string, error) {
-	url, err := buildUrl(assetType, assetCode)
+	url, err := BuildUrl(assetType, assetCode)
 	if err != nil || url == "" {
 		return "", errors.New("erro ao construir a URL")
 	}
@@ -40,7 +40,7 @@ func MakeRequestAsset(assetType, assetCode string) (string, error) {
 	return string(body), nil
 }
 
-func buildUrl(typeAsset, codeAsset string) (string, error) {
+func BuildUrl(typeAsset, codeAsset string) (string, error) {
 	switch typeAsset {
 	case "COIN":
 		return fmt.Sprintf(`https://economia.awesomeapi.com.br/json/last/%s`, codeAsset), nil
