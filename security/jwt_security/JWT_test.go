@@ -47,7 +47,7 @@ func TestValidTokenWith5Minutes(t *testing.T) {
 func TestInValidTokenWithNMinutes(t *testing.T) {
 	message := "myemail@gmail.com"
 	token, err := GenerateTokenWithNMinutes(message,-1)
-	if err == nil {
+	if err != nil {
 		t.Error("Token válido foi considerado inválido")
 	}
 	_, err2 := ValidateToken(token)
