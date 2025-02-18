@@ -137,7 +137,7 @@ func (iu *InvestorUseCase) SendUrlToRecoverPassword(email string) error {
 		return errors.New("erro ao gerar url para recuperação de senha")
 	}
 
-	url := fmt.Sprintf("https://jump-start-frontend.onrender.com/recoverPassword.html?token=%s", token)
+	url := fmt.Sprintf("https://jumpstart.dev.br/recoverPassword.html?token=%s", token)
 
 	bodyEmail := fmt.Sprintf("Para atualizar sua senha acesse o seguinte link para a plataforma jumpStart: %s", url)
 
