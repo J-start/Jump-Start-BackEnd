@@ -246,7 +246,7 @@ func (iu *InvestorUseCase) UpdateDatasInvestor(token string, datas entities.Data
 
 	errDb := iu.repo.UpdateDatasInvestor(datas, idInvestor)
 	if errDb != nil {
-		return errors.New("erro ao atualizar dados do investidor")
+		return errDb
 	}
 	return nil
 }
