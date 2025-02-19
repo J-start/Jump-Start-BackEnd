@@ -151,6 +151,11 @@ func (ir *InvestorRepository) UpdateDatasInvestor(datas entities.DatasInvestor, 
 	query := `UPDATE tb_investor SET investorName = ? , investorEmail = ? WHERE idInvestor = ?`
 	_, err := ir.db.Exec(query, datas.Name,datas.Email, idInvestor)
 	if err != nil {
+		if sqlErr, ok := err.(*mysql.MySQLError); ok {
+			if sqlErr.Number == 1062 {
+				return errors.New("e-mail já está em uso")
+			}
+		}
 		return errors.New("erro ao atualizar dados, tente novamente")
 	}
 	return nil
